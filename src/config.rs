@@ -72,8 +72,7 @@ fn create_default_config<T: Serialize + Config>(
 }
 
 fn get_config_path() -> Result<PathBuf, Box<dyn std::error::Error>> {
-    let mut path = dirs::home_dir()
-        .ok_or("Could not find home directory")?;
+    let mut path = dirs::home_dir().ok_or("Could not find home directory")?;
     path.push(CONFIG_FILE);
     Ok(path)
 }

@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - "**"
+
+jobs:
+  style:
+    timeout-minutes: 15
+    name: Check code formatting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4.0.0
+        with:
+          clean: false
+          fetch-depth: 0
+      - name: Remove untracked files
+        run: git clean -df
+      - name: Run code style check
+        uses: ./.github/actions/check_style
