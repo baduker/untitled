@@ -1,5 +1,5 @@
-mod config;
 mod cli;
+mod config;
 
 use clap::Parser;
 use cli::Cli;
@@ -14,7 +14,7 @@ fn main() {
             } else {
                 println!("Config loaded successfully!");
             }
-        },
+        }
         Err(e) => {
             eprintln!("Error: {}", e);
         }
