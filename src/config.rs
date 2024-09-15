@@ -4,13 +4,20 @@ use std::io::Write;
 use std::path::PathBuf;
 
 const CONFIG_FILE: &str = ".untitled.toml";
+
 pub trait Config: Default {
+    fn app_version() -> &'static str {
+        env!("CARGO_PKG_VERSION")
+    }
     fn base_url(&self) -> &str;
     fn download_dir(&self) -> &str;
     fn is_active(&self) -> bool;
 }
 
 impl Config for MyConfig {
+    fn app_version() -> &'static str {
+        env!("CARGO_PKG_VERSION")
+    }
     fn base_url(&self) -> &str {
         &self.base_url
     }
@@ -25,6 +32,7 @@ impl Config for MyConfig {
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub struct MyConfig {
+    pub app_version: String,
     pub base_url: String,
     pub download_dir: String,
     pub is_active: bool,
@@ -33,6 +41,7 @@ pub struct MyConfig {
 impl Default for MyConfig {
     fn default() -> Self {
         MyConfig {
+            app_version: MyConfig::app_version().to_string(),
             base_url: "https://kindgirls.com/old".to_string(),
             download_dir: "kindgirls".to_string(),
             is_active: true,
