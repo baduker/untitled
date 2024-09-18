@@ -9,13 +9,13 @@ updates:
     directory: "/.github/workflows/"
     schedule:
       day: "friday"
-      time: "7:02"
+      time: "07:02"
       timezone: "Europe/Warsaw"
       interval: "weekly"
   - package-ecosystem: "cargo"
     directory: "/"
     schedule:
       day: "friday"
-      time: "8:01"
+      time: "08:01"
       timezone: "Europe/Warsaw"
       interval: "weekly"
