@@ -19,7 +19,17 @@ jobs:
         with:
           clean: false
           fetch-depth: 0
-      - name: Remove untracked files
-        run: git clean -df
-      - name: Run code style check
-        uses: ./.github/actions/check_style
+
+      - name: Filter for Rust file changes only
+        uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            src:
+            - 'src/*.rs'
+      - if: steps.changes.outputs.files == 'src/*.rs'
+          - name: Remove untracked files
+            run: git clean -df
+
+          - name: Run code style check
+            uses: ./.github/actions/check_style
