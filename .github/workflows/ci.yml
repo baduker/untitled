@@ -25,10 +25,11 @@ jobs:
         id: changes
         with:
           filters: |
-            **/*.rs
+            src:
+            - 'src/*.rs'
+      - if: steps.changes.outputs.files == 'src/*.rs'
+          - name: Remove untracked files
+            run: git clean -df
 
-      - name: Remove untracked files
-        run: git clean -df
-
-      - name: Run code style check
-        uses: ./.github/actions/check_style
+          - name: Run code style check
+            uses: ./.github/actions/check_style
