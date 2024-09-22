@@ -37,7 +37,7 @@ impl Default for MyConfig {
     fn default() -> Self {
         MyConfig {
             app_version: MyConfig::app_version().to_string(),
-            base_url: "https://kindgirls.com/old".to_string(),
+            base_url: "https://kindgirls.com/".to_string(),
             download_dir: "kindgirls".to_string(),
             is_active: true,
         }

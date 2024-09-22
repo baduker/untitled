@@ -1,11 +1,11 @@
 mod cli;
 mod config;
-mod scrape;
+mod scraper;
 
+use crate::scraper::collector::scrape;
 use clap::Parser;
 use cli::{Cli, Commands};
 use config::{print_config, read_or_create_config, MyConfig};
-use scrape::scrape;
 
 fn main() {
     let cli = Cli::parse();
