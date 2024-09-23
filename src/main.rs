@@ -1,6 +1,7 @@
 mod cli;
 mod config;
 mod scraper;
+mod utilities;
 
 use crate::scraper::collector::scrape;
 use clap::Parser;
