@@ -26,7 +26,7 @@ struct Girl {
     bio: Option<Bio>,
 
     #[serde(rename = "data", skip_serializing_if = "Option::is_none")]
-    content: Option<Galleries>,
+    content: Option<Visuals>,
 
     #[serde(rename = "stats", skip_serializing_if = "Option::is_none")]
     stats: Option<Stats>,
@@ -50,8 +50,23 @@ struct Bio {
     alias: Option<String>,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub(crate) struct Gallery {
+    #[serde(rename = "id", skip_serializing_if = "Option::is_none")]
+    pub(crate) id: Option<String>,
+
+    #[serde(rename = "date", skip_serializing_if = "Option::is_none")]
+    pub(crate) date: Option<String>,
+
+    #[serde(rename = "link", skip_serializing_if = "Option::is_none")]
+    pub(crate) link: Option<String>,
+
+    #[serde(rename = "total_photos", skip_serializing_if = "Option::is_none")]
+    pub(crate) total_photos: Option<i32>,
+}
+
 #[derive(Serialize, Deserialize)]
-struct Galleries {
+struct Visuals {
     #[serde(rename = "thumb", skip_serializing_if = "Option::is_none")]
     thumb_nail: Option<String>,
 
@@ -60,18 +75,6 @@ struct Galleries {
 
     #[serde(rename = "videos", skip_serializing_if = "Option::is_none")]
     videos: Option<Vec<Video>>,
-}
-
-#[derive(Serialize, Deserialize)]
-struct Gallery {
-    #[serde(rename = "id", skip_serializing_if = "Option::is_none")]
-    id: Option<String>,
-
-    #[serde(rename = "link", skip_serializing_if = "Option::is_none")]
-    link: Option<String>,
-
-    #[serde(rename = "images", skip_serializing_if = "Option::is_none")]
-    images: Option<Vec<String>>,
 }
 
 #[derive(Serialize, Deserialize)]
