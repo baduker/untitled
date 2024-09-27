@@ -11,10 +11,8 @@ pub struct Selectors;
 impl Selectors {
     /// The set of CSS selectors to scrape the kindgirls.com website.
     pub const MODEL_INFO: &'static str = r#"#model_info"#;
-    pub const MODEL_NAME: &'static str = r#"h3"#;
-    pub const MODEL_COUNTRY: &'static str = r#"a"#;
-    pub const MODEL_BIRTH_AND_ALIAS: &'static str = r#"br"#;
     pub const MODEL_GALLERIES: &'static str = r#".gal_list a"#;
+    pub const MODEL_VIDEOS: &'static str = r#".video_list a"#;
 }
 
 #[derive(Serialize, Deserialize)]
@@ -68,16 +66,16 @@ impl Bio {
         }
         bio
     }
-    
+
     fn parse_alias(alias: &str) -> Vec<String> {
-        alias.strip_prefix("Alias: ")
+        alias
+            .strip_prefix("Alias: ")
             .unwrap_or(alias)
             .split(",")
             .map(|s| s.trim().to_string())
             .collect()
     }
 }
-
 
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct Gallery {
@@ -106,19 +104,16 @@ struct Visuals {
     videos: Option<Vec<Video>>,
 }
 
-#[derive(Serialize, Deserialize)]
-struct Video {
-    #[serde(rename = "id", skip_serializing_if = "Option::is_none")]
-    id: Option<String>,
-
+#[derive(Debug, Serialize, Deserialize)]
+pub(crate) struct Video {
     #[serde(rename = "link", skip_serializing_if = "Option::is_none")]
-    link: Option<String>,
+    pub(crate) link: Option<String>,
 
     #[serde(rename = "source", skip_serializing_if = "Option::is_none")]
-    source: Option<String>,
+    pub(crate) source: Option<String>,
 
     #[serde(rename = "duration", skip_serializing_if = "Option::is_none")]
-    duration: Option<i32>,
+    pub(crate) duration: Option<u32>,
 }
 
 #[derive(Serialize, Deserialize)]

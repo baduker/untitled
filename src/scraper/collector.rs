@@ -1,7 +1,7 @@
-use clap::builder::Str;
-use super::structs::{Bio, Gallery, Selectors};
+use super::structs::{Bio, Gallery, Selectors, Video};
 use crate::config::Config;
-use crate::utilities::splitter;
+use crate::utilities::{build_video_src_url, parse_video_duration, splitter};
+use clap::builder::{Str, TypedValueParser};
 use reqwest::blocking::Client;
 use reqwest::header::{HeaderMap, HeaderValue, USER_AGENT};
 use reqwest::Error;
@@ -27,6 +27,9 @@ pub fn scrape<T: Config>(config: &T, url: Option<&str>) {
                 println!("{:?}", gallery);
             }
             println!("Total images: {}", total_images);
+
+            let video = collect_video(&document);
+            println!("{:?}", video)
         }
         None => {
             println!("Scraping from: {}", config.base_url());
@@ -70,9 +73,31 @@ fn collect_gallery(document: &Html) -> Vec<Gallery> {
 fn collect_bio(document: &Html) -> Bio {
     let selector = Selector::parse(Selectors::MODEL_INFO).unwrap();
     let model_info = document.select(&selector).next().unwrap();
-    let info_text: Vec<String> = model_info.text()
+    let info_text: Vec<String> = model_info
+        .text()
         .map(|s| s.trim().to_string())
         .filter(|s| !s.is_empty())
         .collect();
     Bio::new(info_text)
+}
+
+fn collect_video(document: &Html) -> Video {
+    let selector = Selector::parse(Selectors::MODEL_VIDEOS).unwrap();
+    let model_videos = document.select(&selector).next().unwrap();
+
+    let video_href = model_videos.value().attr("href").unwrap().to_string();
+    let video_full_url = format!("{}{}", DEFAULT_BASE_URL, video_href);
+
+    // Create a new selector for the img tag within the video link
+    let img_selector = Selector::parse("img").unwrap();
+    let img_element = model_videos.select(&img_selector).next().unwrap();
+    let video_source_url = img_element.value().attr("src").unwrap().to_string();
+
+    let video_length = model_videos.text().collect::<Vec<_>>().join(" ");
+
+    Video {
+        link: Some(video_full_url),
+        source: Some(build_video_src_url(video_source_url)),
+        duration: Some(parse_video_duration(&video_length)),
+    }
 }
