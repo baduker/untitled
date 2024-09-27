@@ -18,7 +18,24 @@ pub fn create_dir<T: Config>(config: &T, dir_name: &str) -> Result<(), Box<dyn E
 pub fn build_video_src_url(source: String) -> String {
     let base_suffix = ".mp4";
     let source_base_url = "https://vids.kindgirls.com/d9";
-    // /vids/scbig/mila-azul-3.jpg
+    /*
+    This does a couple of things:
+    - it takes this - /vids/scbig/mila-azul-3.jpg, which is the source
+    - splits on /
+    - removes the .jpg or jpeg suffix
+    - adds .mp4 suffix instead
+    - glues this all together to build an actual video source url
+    
+    For example:
+    from this
+        
+        /vids/scbig/mila-azul-3.jp
+         
+    to this
+    
+        https://vids.kindgirls.com/d9/mila-azul-3.mp4
+         
+    */
     let video_name = source
         .split("/")
         .last()
