@@ -1,7 +1,6 @@
 use super::structs::{Bio, Gallery, Selectors, Video};
 use crate::config::Config;
 use crate::utilities::{build_video_src_url, parse_video_duration, splitter};
-use clap::builder::{Str, TypedValueParser};
 use reqwest::blocking::Client;
 use reqwest::header::{HeaderMap, HeaderValue, USER_AGENT};
 use reqwest::Error;
@@ -28,8 +27,10 @@ pub fn scrape<T: Config>(config: &T, url: Option<&str>) {
             }
             println!("Total images: {}", total_images);
 
-            let video = collect_video(&document);
-            println!("{:?}", video)
+            let videos = collect_videos(&document);
+            for video in &videos {
+                println!("{:?}", video);
+            }
         }
         None => {
             println!("Scraping from: {}", config.base_url());
@@ -81,23 +82,27 @@ fn collect_bio(document: &Html) -> Bio {
     Bio::new(info_text)
 }
 
-fn collect_video(document: &Html) -> Video {
+fn collect_videos(document: &Html) -> Vec<Video> {
     let selector = Selector::parse(Selectors::MODEL_VIDEOS).unwrap();
-    let model_videos = document.select(&selector).next().unwrap();
+    let model_videos = document.select(&selector);
 
-    let video_href = model_videos.value().attr("href").unwrap().to_string();
-    let video_full_url = format!("{}{}", DEFAULT_BASE_URL, video_href);
+    model_videos
+        .map(|video_element| {
+            let video_href = video_element.value().attr("href").unwrap().to_string();
+            let video_full_url = format!("{}{}", DEFAULT_BASE_URL, video_href);
 
-    // Create a new selector for the img tag within the video link
-    let img_selector = Selector::parse("img").unwrap();
-    let img_element = model_videos.select(&img_selector).next().unwrap();
-    let video_source_url = img_element.value().attr("src").unwrap().to_string();
+            // Create a new selector for the img tag within the video link
+            let img_selector = Selector::parse("img").unwrap();
+            let img_element = video_element.select(&img_selector).next().unwrap();
+            let video_source_url = img_element.value().attr("src").unwrap().to_string();
 
-    let video_length = model_videos.text().collect::<Vec<_>>().join(" ");
+            let video_length = video_element.text().collect::<Vec<_>>().join(" ");
 
-    Video {
-        link: Some(video_full_url),
-        source: Some(build_video_src_url(video_source_url)),
-        duration: Some(parse_video_duration(&video_length)),
-    }
+            Video {
+                link: Some(video_full_url),
+                source: Some(build_video_src_url(video_source_url)),
+                duration: Some(parse_video_duration(&video_length)),
+            }
+        })
+        .collect()
 }
