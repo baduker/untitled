@@ -1,4 +1,5 @@
-use super::structs::{Gallery, Selectors};
+use clap::builder::Str;
+use super::structs::{Bio, Gallery, Selectors};
 use crate::config::Config;
 use crate::utilities::splitter;
 use reqwest::blocking::Client;
@@ -16,6 +17,9 @@ pub fn scrape<T: Config>(config: &T, url: Option<&str>) {
             let body = fetch(url);
             let document = Html::parse_document(&body.unwrap());
             let galleries = collect_gallery(&document);
+
+            let bio = collect_bio(&document);
+            println!("{:?}", bio);
 
             let total_images: i32 = galleries.iter().filter_map(|g| g.total_photos).sum();
 
@@ -48,11 +52,8 @@ fn collect_gallery(document: &Html) -> Vec<Gallery> {
             let href = element.value().attr("href").unwrap();
             let full_url = format!("{}{}", DEFAULT_BASE_URL, href);
             let gallery_id = splitter(href, "=").last().unwrap().to_string();
-
             let text = element.text().collect::<Vec<_>>().join(" ");
-
             let total_photos = text.split_whitespace().next().unwrap().parse::<i32>().ok();
-
             let title = splitter(element.value().attr("title").unwrap(), ", ");
             let date = title.last().unwrap().to_string();
 
@@ -64,4 +65,14 @@ fn collect_gallery(document: &Html) -> Vec<Gallery> {
             }
         })
         .collect()
+}
+
+fn collect_bio(document: &Html) -> Bio {
+    let selector = Selector::parse(Selectors::MODEL_INFO).unwrap();
+    let model_info = document.select(&selector).next().unwrap();
+    let info_text: Vec<String> = model_info.text()
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .collect();
+    Bio::new(info_text)
 }

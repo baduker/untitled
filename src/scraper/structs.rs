@@ -9,10 +9,11 @@ fn is_false(b: &bool) -> bool {
 pub struct Selectors;
 
 impl Selectors {
-    /// The set of XPath expressions to scrape the kindgirls.com website.
+    /// The set of CSS selectors to scrape the kindgirls.com website.
     pub const MODEL_INFO: &'static str = r#"#model_info"#;
-    pub const MODEL_NAME: &'static str = r#"#model_info > h3"#;
-    pub const MODEL_COUNTRY: &'static str = r#"#model_info > a"#;
+    pub const MODEL_NAME: &'static str = r#"h3"#;
+    pub const MODEL_COUNTRY: &'static str = r#"a"#;
+    pub const MODEL_BIRTH_AND_ALIAS: &'static str = r#"br"#;
     pub const MODEL_GALLERIES: &'static str = r#".gal_list a"#;
 }
 
@@ -32,23 +33,51 @@ struct Girl {
     stats: Option<Stats>,
 }
 
-#[derive(Serialize, Deserialize)]
-struct Bio {
-    #[serde(rename = "id", skip_serializing_if = "Option::is_none")]
-    id: Option<String>,
-
+#[derive(Debug, Serialize, Deserialize)]
+pub(crate) struct Bio {
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
-    name: Option<String>,
+    pub(crate) name: Option<String>,
 
     #[serde(rename = "country", skip_serializing_if = "Option::is_none")]
-    country: Option<String>,
+    pub(crate) country: Option<String>,
 
     #[serde(rename = "birth_year", skip_serializing_if = "Option::is_none")]
-    birth_year: Option<String>,
+    pub(crate) birth_year: Option<String>,
 
     #[serde(rename = "alias", skip_serializing_if = "Option::is_none")]
-    alias: Option<String>,
+    pub(crate) alias: Option<Vec<String>>,
 }
+
+impl Bio {
+    pub fn new(info: Vec<String>) -> Self {
+        let mut bio = Bio {
+            name: None,
+            country: None,
+            birth_year: None,
+            alias: None,
+        };
+
+        for (index, item) in info.iter().enumerate() {
+            match index {
+                0 => bio.name = Some(item.clone()),
+                1 => bio.country = Some(item.clone()),
+                2 => bio.birth_year = Some(item.clone()),
+                3 => bio.alias = Some(Self::parse_alias(item)),
+                _ => break,
+            }
+        }
+        bio
+    }
+    
+    fn parse_alias(alias: &str) -> Vec<String> {
+        alias.strip_prefix("Alias: ")
+            .unwrap_or(alias)
+            .split(",")
+            .map(|s| s.trim().to_string())
+            .collect()
+    }
+}
+
 
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct Gallery {
