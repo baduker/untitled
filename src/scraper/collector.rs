@@ -22,10 +22,10 @@ pub fn scrape<T: Config>(config: &T, url: Option<&str>) {
             let galleries = collect_gallery(&document);
             let videos = collect_videos(&document);
             let visuals = collect_visuals(galleries, videos);
-            println!("{:?}", visuals);
-            let stats = collect_stats(visuals);
             
-            println!("{:?}", stats);
+            for gallery in visuals.galleries {
+                println!("{}", gallery.show_link())
+            }
         }
         None => {
             println!("Scraping from: {}", config.base_url());
@@ -108,9 +108,14 @@ fn collect_visuals(galleries: Vec<Gallery>, videos: Vec<Video>) -> Visuals {
         videos: Some(videos),
     }
 }
+
 fn collect_stats(visuals: Visuals) -> Stats {
-    let total_images: i32 = visuals.galleries.iter().filter_map(|g| g.total_photos).sum();
-    
+    let total_images: i32 = visuals
+        .galleries
+        .iter()
+        .filter_map(|g| g.total_photos)
+        .sum();
+
     Stats {
         total_galleries: visuals.galleries.iter().len(),
         total_photos: total_images,

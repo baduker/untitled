@@ -1,3 +1,4 @@
+use std::fmt;
 use serde::{Deserialize, Serialize};
 
 fn is_false(b: &bool) -> bool {
@@ -90,6 +91,23 @@ pub(crate) struct Gallery {
 
     #[serde(rename = "total_photos", skip_serializing_if = "Option::is_none")]
     pub(crate) total_photos: Option<i32>,
+}
+
+pub(crate) struct GalleryLink(Option<String>);
+
+impl fmt::Display for GalleryLink {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.0 {
+            Some(link) => write!(f, "{}", link),
+            None => write!(f, "No gallery link available."),
+        }
+    }
+}
+
+impl Gallery {
+    pub fn show_link(&self) -> GalleryLink {
+        GalleryLink(self.link.clone())
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
