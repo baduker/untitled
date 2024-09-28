@@ -15,20 +15,20 @@ impl Selectors {
     pub const MODEL_VIDEOS: &'static str = r#".video_list a"#;
 }
 
-#[derive(Serialize, Deserialize)]
-struct Girl {
+#[derive(Debug, Serialize, Deserialize)]
+pub(crate) struct Girl {
     /// This is the main container for a model from the kindgirls.com website.
-    #[serde(rename = "isSingleGallery", skip_serializing_if = "is_false")]
-    is_single_gallery: bool,
+    #[serde(rename = "singleGallery")]
+    pub(crate) is_single_gallery: bool,
 
-    #[serde(rename = "info", skip_serializing_if = "Option::is_none")]
-    bio: Option<Bio>,
+    #[serde(rename = "bio")]
+    pub(crate) bio: Bio,
 
-    #[serde(rename = "data", skip_serializing_if = "Option::is_none")]
-    content: Option<Visuals>,
+    #[serde(rename = "content")]
+    pub (crate) content: Visuals,
 
-    #[serde(rename = "stats", skip_serializing_if = "Option::is_none")]
-    stats: Option<Stats>,
+    #[serde(rename = "stats")]
+    pub(crate) stats: Stats,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -92,16 +92,13 @@ pub(crate) struct Gallery {
     pub(crate) total_photos: Option<i32>,
 }
 
-#[derive(Serialize, Deserialize)]
-struct Visuals {
-    #[serde(rename = "thumb", skip_serializing_if = "Option::is_none")]
-    thumb_nail: Option<String>,
-
-    #[serde(rename = "galleries", skip_serializing_if = "Option::is_none")]
-    galleries: Option<Vec<Gallery>>,
+#[derive(Debug, Serialize, Deserialize)]
+pub (crate) struct Visuals {
+    #[serde(rename = "galleries")]
+    pub(crate) galleries: Vec<Gallery>,
 
     #[serde(rename = "videos", skip_serializing_if = "Option::is_none")]
-    videos: Option<Vec<Video>>,
+    pub(crate) videos: Option<Vec<Video>>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -116,14 +113,14 @@ pub(crate) struct Video {
     pub(crate) duration: Option<u32>,
 }
 
-#[derive(Serialize, Deserialize)]
-struct Stats {
-    #[serde(rename = "total_galleries", skip_serializing_if = "Option::is_none")]
-    total_galleries: Option<i32>,
+#[derive(Debug, Serialize, Deserialize)]
+pub(crate) struct Stats {
+    #[serde(rename = "total_galleries")]
+    pub(crate) total_galleries: usize,
 
-    #[serde(rename = "total_photos", skip_serializing_if = "Option::is_none")]
-    total_photos: Option<i32>,
+    #[serde(rename = "total_photos")]
+    pub(crate) total_photos: i32,
 
     #[serde(rename = "total_videos", skip_serializing_if = "Option::is_none")]
-    total_videos: Option<i32>,
+    pub(crate) total_videos: Option<usize>,
 }

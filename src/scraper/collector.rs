@@ -1,4 +1,4 @@
-use super::structs::{Bio, Gallery, Selectors, Video};
+use super::structs::{Bio, Gallery, Selectors, Stats, Video, Visuals};
 use crate::config::Config;
 use crate::utilities::{build_video_src_url, parse_video_duration, splitter};
 use reqwest::blocking::Client;
@@ -15,22 +15,17 @@ pub fn scrape<T: Config>(config: &T, url: Option<&str>) {
             println!("Scraping from: {}", url);
             let body = fetch(url);
             let document = Html::parse_document(&body.unwrap());
-            let galleries = collect_gallery(&document);
 
             let bio = collect_bio(&document);
             println!("{:?}", bio);
 
-            let total_images: i32 = galleries.iter().filter_map(|g| g.total_photos).sum();
-
-            for gallery in &galleries {
-                println!("{:?}", gallery);
-            }
-            println!("Total images: {}", total_images);
-
+            let galleries = collect_gallery(&document);
             let videos = collect_videos(&document);
-            for video in &videos {
-                println!("{:?}", video);
-            }
+            let visuals = collect_visuals(galleries, videos);
+            println!("{:?}", visuals);
+            let stats = collect_stats(visuals);
+            
+            println!("{:?}", stats);
         }
         None => {
             println!("Scraping from: {}", config.base_url());
@@ -46,6 +41,17 @@ fn fetch(url: &str) -> Result<String, Error> {
     let response = client.get(url).headers(headers).send();
     let body = response?.text()?;
     Ok(body)
+}
+
+fn collect_bio(document: &Html) -> Bio {
+    let selector = Selector::parse(Selectors::MODEL_INFO).unwrap();
+    let model_info = document.select(&selector).next().unwrap();
+    let info_text: Vec<String> = model_info
+        .text()
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .collect();
+    Bio::new(info_text)
 }
 
 fn collect_gallery(document: &Html) -> Vec<Gallery> {
@@ -71,17 +77,6 @@ fn collect_gallery(document: &Html) -> Vec<Gallery> {
         .collect()
 }
 
-fn collect_bio(document: &Html) -> Bio {
-    let selector = Selector::parse(Selectors::MODEL_INFO).unwrap();
-    let model_info = document.select(&selector).next().unwrap();
-    let info_text: Vec<String> = model_info
-        .text()
-        .map(|s| s.trim().to_string())
-        .filter(|s| !s.is_empty())
-        .collect();
-    Bio::new(info_text)
-}
-
 fn collect_videos(document: &Html) -> Vec<Video> {
     let selector = Selector::parse(Selectors::MODEL_VIDEOS).unwrap();
     let model_videos = document.select(&selector);
@@ -105,4 +100,20 @@ fn collect_videos(document: &Html) -> Vec<Video> {
             }
         })
         .collect()
+}
+
+fn collect_visuals(galleries: Vec<Gallery>, videos: Vec<Video>) -> Visuals {
+    Visuals {
+        galleries,
+        videos: Some(videos),
+    }
+}
+fn collect_stats(visuals: Visuals) -> Stats {
+    let total_images: i32 = visuals.galleries.iter().filter_map(|g| g.total_photos).sum();
+    
+    Stats {
+        total_galleries: visuals.galleries.iter().len(),
+        total_photos: total_images,
+        total_videos: Some(visuals.videos.iter().len()),
+    }
 }
