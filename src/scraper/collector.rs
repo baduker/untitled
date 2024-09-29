@@ -123,10 +123,12 @@ fn collect_stats(visuals: &Visuals) -> Stats {
         .filter_map(|g| g.total_photos)
         .sum();
 
+    let total_videos = visuals.videos.as_ref().map(|videos| videos.len());
+
     Stats {
-        total_galleries: visuals.galleries.iter().len(),
+        total_galleries: visuals.galleries.len(),
         total_photos: total_images,
-        total_videos: Some(visuals.videos.iter().len()),
+        total_videos,
     }
 }
 
