@@ -6,7 +6,7 @@ on:
       - main
   pull_request:
     branches:
-      - "**"
+      - "*"
 
 jobs:
   changes:
@@ -37,4 +37,4 @@ jobs:
       - name: Remove untracked files
         run: git clean -df
       - name: Run code style check
-        uses: /.github/actions/check_style
+        uses: .github/actions/check_style
