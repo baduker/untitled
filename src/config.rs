@@ -11,7 +11,6 @@ pub trait Config: Default {
     }
     fn base_url(&self) -> &str;
     fn download_dir(&self) -> &str;
-    fn is_active(&self) -> bool;
 }
 
 impl Config for MyConfig {
@@ -24,10 +23,6 @@ impl Config for MyConfig {
 
     fn download_dir(&self) -> &str {
         &self.download_dir
-    }
-
-    fn is_active(&self) -> bool {
-        self.is_active
     }
 }
 #[derive(Debug, Deserialize, Serialize)]
@@ -42,7 +37,7 @@ impl Default for MyConfig {
     fn default() -> Self {
         MyConfig {
             app_version: MyConfig::app_version().to_string(),
-            base_url: "https://kindgirls.com/old".to_string(),
+            base_url: "https://kindgirls.com/".to_string(),
             download_dir: "kindgirls".to_string(),
             is_active: true,
         }
@@ -58,6 +53,11 @@ pub fn read_or_create_config<T: DeserializeOwned + Serialize + Config>(
     let config_str = fs::read_to_string(config_path)?;
     let config: T = toml::from_str(&config_str)?;
     Ok(config)
+}
+
+pub fn print_config<T: std::fmt::Debug + Config>(config: &T) {
+    println!("Config: {:?}", config);
+    println!("base_url: {}", config.base_url());
 }
 
 fn create_default_config<T: Serialize + Config>(
