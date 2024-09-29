@@ -14,10 +14,10 @@ jobs:
     name: Check code formatting
     runs-on: ubuntu-latest
     outputs: 
-      src: ${{ steps.filter.outputs.src }}
+      src: ${{ steps.changes.outputs.src }}
     steps:
       - name: Checkout the repository
-      - uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4.1.7
       - name: Filter for Rust file changes only
         uses: dorny/paths-filter@v3
         id: changes
@@ -25,10 +25,17 @@ jobs:
           filters: |
             src:
             - 'src/*.rs'
+      - name: Report changes
+        run: |
+          if [ "${{ steps.changes.outputs.src }}" == 'true' ]; then
+            echo "Changes detected in source files."
+          else
+            echo "No changes to source files."
+          fi
 
   src:
     needs: changes
-    if: ${{ needs.changes.outputs.backend == 'true' }}
+    if: ${{ needs.changes.outputs.src == 'true' }}
     name: Run style checks
     runs-on: ubuntu-latest
     steps:
