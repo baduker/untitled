@@ -17,7 +17,7 @@ jobs:
       src: ${{ steps.filter.outputs.src }}
     steps:
       - name: Filter for Rust file changes only
-        uses: dorny/paths-filter@v2
+        uses: dorny/paths-filter@v3
         id: changes
         with:
           filters: |
@@ -27,6 +27,7 @@ jobs:
   src:
     needs: changes
     if: ${{ needs.changes.outputs.backend == 'true' }}
+    name: Run style checks
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
@@ -34,7 +35,5 @@ jobs:
         with:
           clean: false
           fetch-depth: 0
-      - name: Remove untracked files
-        run: git clean -df
       - name: Run code style check
         uses: ./.github/actions/check_style
