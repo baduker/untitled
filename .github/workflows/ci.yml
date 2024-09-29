@@ -16,6 +16,8 @@ jobs:
     outputs: 
       src: ${{ steps.filter.outputs.src }}
     steps:
+      - name: Checkout the repository
+      - uses: actions/checkout@v4.1.7
       - name: Filter for Rust file changes only
         uses: dorny/paths-filter@v3
         id: changes
