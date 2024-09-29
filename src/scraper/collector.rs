@@ -22,10 +22,10 @@ pub fn scrape<T: Config>(config: &T, url: Option<&str>) {
             let galleries = collect_gallery(&document);
             let videos = collect_videos(&document);
             let visuals = collect_visuals(galleries, videos);
-            
-            for gallery in visuals.galleries {
-                println!("{}", gallery.show_link())
-            }
+            let stats = collect_stats(&visuals);
+
+            println!("{:?}", visuals);
+            println!("{:?}", stats);
         }
         None => {
             println!("Scraping from: {}", config.base_url());
@@ -77,11 +77,11 @@ fn collect_gallery(document: &Html) -> Vec<Gallery> {
         .collect()
 }
 
-fn collect_videos(document: &Html) -> Vec<Video> {
+fn collect_videos(document: &Html) -> Option<Vec<Video>> {
     let selector = Selector::parse(Selectors::MODEL_VIDEOS).unwrap();
     let model_videos = document.select(&selector);
 
-    model_videos
+    let videos: Vec<Video> = model_videos
         .map(|video_element| {
             let video_href = video_element.value().attr("href").unwrap().to_string();
             let video_full_url = format!("{}{}", DEFAULT_BASE_URL, video_href);
@@ -99,17 +99,20 @@ fn collect_videos(document: &Html) -> Vec<Video> {
                 duration: Some(parse_video_duration(&video_length)),
             }
         })
-        .collect()
-}
+        .collect();
 
-fn collect_visuals(galleries: Vec<Gallery>, videos: Vec<Video>) -> Visuals {
-    Visuals {
-        galleries,
-        videos: Some(videos),
+    if videos.is_empty() {
+        None
+    } else {
+        Some(videos)
     }
 }
 
-fn collect_stats(visuals: Visuals) -> Stats {
+fn collect_visuals(galleries: Vec<Gallery>, videos: Option<Vec<Video>>) -> Visuals {
+    Visuals { galleries, videos }
+}
+
+fn collect_stats(visuals: &Visuals) -> Stats {
     let total_images: i32 = visuals
         .galleries
         .iter()

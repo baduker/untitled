@@ -1,5 +1,5 @@
-use std::fmt;
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 fn is_false(b: &bool) -> bool {
     // This means "not the value of b"; * is the dereference operator and ! is the logical NOT operator.
@@ -26,7 +26,7 @@ pub(crate) struct Girl {
     pub(crate) bio: Bio,
 
     #[serde(rename = "content")]
-    pub (crate) content: Visuals,
+    pub(crate) content: Visuals,
 
     #[serde(rename = "stats")]
     pub(crate) stats: Stats,
@@ -111,7 +111,7 @@ impl Gallery {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub (crate) struct Visuals {
+pub(crate) struct Visuals {
     #[serde(rename = "galleries")]
     pub(crate) galleries: Vec<Gallery>,
 

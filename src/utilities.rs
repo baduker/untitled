@@ -25,16 +25,16 @@ pub fn build_video_src_url(source: String) -> String {
     - removes the .jpg or jpeg suffix
     - adds .mp4 suffix instead
     - glues this all together to build an actual video source url
-    
+
     For example:
     from this
-        
+
         /vids/scbig/mila-azul-3.jp
-         
+
     to this
-    
+
         https://vids.kindgirls.com/d9/mila-azul-3.mp4
-         
+
     */
     let video_name = source
         .split("/")
