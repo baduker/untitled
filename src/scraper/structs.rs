@@ -32,6 +32,12 @@ pub(crate) struct Girl {
     pub(crate) stats: Stats,
 }
 
+impl Girl {
+    pub fn is_single_gallery(url: &str) -> bool {
+        !url.contains("girls.php?id=")
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct Bio {
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]

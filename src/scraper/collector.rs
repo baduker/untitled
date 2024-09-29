@@ -1,4 +1,4 @@
-use super::structs::{Bio, Gallery, Selectors, Stats, Video, Visuals};
+use super::structs::{Bio, Gallery, Girl, Selectors, Stats, Video, Visuals};
 use crate::config::Config;
 use crate::utilities::{build_video_src_url, parse_video_duration, splitter};
 use reqwest::blocking::Client;
@@ -13,19 +13,23 @@ pub fn scrape<T: Config>(config: &T, url: Option<&str>) {
     match url {
         Some(url) => {
             println!("Scraping from: {}", url);
+
+            if Girl::is_single_gallery(url) {
+                println!("Scraping for single gallery is NOT implemented yet. :(");
+                return;
+            }
+
             let body = fetch(url);
-            let document = Html::parse_document(&body.unwrap());
-
-            let bio = collect_bio(&document);
-            println!("{:?}", bio);
-
-            let galleries = collect_gallery(&document);
-            let videos = collect_videos(&document);
-            let visuals = collect_visuals(galleries, videos);
-            let stats = collect_stats(&visuals);
-
-            println!("{:?}", visuals);
-            println!("{:?}", stats);
+            match body {
+                Ok(content) => {
+                    let document = Html::parse_document(&content);
+                    let girl = collect_girl(url, &document);
+                    println!("{:?}", girl);
+                }
+                Err(e) => {
+                    println!("Error fetching URL: {}", e);
+                }
+            }
         }
         None => {
             println!("Scraping from: {}", config.base_url());
@@ -124,4 +128,20 @@ fn collect_stats(visuals: &Visuals) -> Stats {
         total_photos: total_images,
         total_videos: Some(visuals.videos.iter().len()),
     }
+}
+
+fn collect_girl(url: &str, document: &Html) -> Result<Girl, String> {
+    let is_single_gallery = Girl::is_single_gallery(url);
+    let bio = collect_bio(document);
+    let galleries = collect_gallery(document);
+    let videos = collect_videos(document);
+    let visuals = collect_visuals(galleries, videos);
+    let stats = collect_stats(&visuals);
+
+    Ok(Girl {
+        is_single_gallery,
+        bio,
+        content: visuals,
+        stats,
+    })
 }
