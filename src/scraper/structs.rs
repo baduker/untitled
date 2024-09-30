@@ -53,6 +53,17 @@ pub(crate) struct Bio {
     pub(crate) alias: Option<Vec<String>>,
 }
 
+pub(crate) struct BioName(Option<String>);
+
+impl fmt::Display for BioName {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.0 {
+            Some(name) => write!(f, "{}", name),
+            None => write!(f, "No name available."),
+        }
+    }
+}
+
 impl Bio {
     pub fn new(info: Vec<String>) -> Self {
         let mut bio = Bio {
@@ -72,6 +83,10 @@ impl Bio {
             }
         }
         bio
+    }
+
+    pub fn get_name(&self) -> BioName {
+        BioName(self.name.clone())
     }
 
     fn parse_alias(alias: &str) -> Vec<String> {

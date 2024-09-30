@@ -1,6 +1,6 @@
 use std::error::Error;
 use std::fs;
-use std::path::Path;
+use std::path::PathBuf;
 
 use crate::config::Config;
 
@@ -8,10 +8,29 @@ pub fn splitter(string: &str, split_on: &str) -> Vec<String> {
     string.split(split_on).map(|s| s.to_string()).collect()
 }
 
-pub fn create_dir<T: Config>(config: &T, dir_name: &str) -> Result<(), Box<dyn Error>> {
-    if !Path::new(dir_name).exists() {
-        fs::create_dir(dir_name)?;
+pub fn create_dirs<T: Config>(config: &T, girl: &Girl) -> Result<(), Box<dyn Error>> {
+    let base_dir = PathBuf::from(config.download_dir());
+    let girl_name = girl.bio.get_name().to_string();
+
+    let mut paths_to_create = vec![
+        base_dir.join(&girl_name),
+        base_dir.join(&girl_name).join("videos"),
+    ];
+
+    // Add gallery paths
+    for gallery in &girl.content.galleries {
+        if let Some(date) = &gallery.date {
+            paths_to_create.push(base_dir.join(&girl_name).join(date));
+        }
     }
+
+    // Create all directories
+    for path in paths_to_create {
+        if !path.exists() {
+            fs::create_dir_all(&path)?;
+        }
+    }
+
     Ok(())
 }
 
