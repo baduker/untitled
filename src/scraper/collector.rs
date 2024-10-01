@@ -1,5 +1,6 @@
 use super::structs::{Bio, Gallery, Girl, Selectors, Stats, Video, Visuals};
 use crate::config::Config;
+use crate::scraper::downloader::create_dirs;
 use crate::utilities::{build_video_src_url, parse_video_duration, splitter};
 use reqwest::blocking::Client;
 use reqwest::header::{HeaderMap, HeaderValue, USER_AGENT};
@@ -24,6 +25,7 @@ pub fn scrape<T: Config>(config: &T, url: Option<&str>) {
                 Ok(content) => {
                     let document = Html::parse_document(&content);
                     let girl = collect_girl(url, &document);
+                    let _ = create_dirs(config, &girl);
                     println!("{:?}", girl);
                 }
                 Err(e) => {
@@ -132,7 +134,7 @@ fn collect_stats(visuals: &Visuals) -> Stats {
     }
 }
 
-fn collect_girl(url: &str, document: &Html) -> Result<Girl, String> {
+fn collect_girl(url: &str, document: &Html) -> Girl {
     let is_single_gallery = Girl::is_single_gallery(url);
     let bio = collect_bio(document);
     let galleries = collect_gallery(document);
@@ -140,10 +142,10 @@ fn collect_girl(url: &str, document: &Html) -> Result<Girl, String> {
     let visuals = collect_visuals(galleries, videos);
     let stats = collect_stats(&visuals);
 
-    Ok(Girl {
+    Girl {
         is_single_gallery,
         bio,
         content: visuals,
         stats,
-    })
+    }
 }
