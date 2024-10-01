@@ -1,7 +1,7 @@
 use super::structs::{Bio, Gallery, Girl, Selectors, Stats, Video, Visuals};
 use crate::config::Config;
-use crate::scraper::downloader::create_dirs;
 use crate::utilities::{build_video_src_url, parse_video_duration, splitter};
+use crate::scraper::downloader::{DownloaderImpl, Downloader};
 use reqwest::blocking::Client;
 use reqwest::header::{HeaderMap, HeaderValue, USER_AGENT};
 use reqwest::Error;
@@ -25,8 +25,18 @@ pub fn scrape<T: Config>(config: &T, url: Option<&str>) {
                 Ok(content) => {
                     let document = Html::parse_document(&content);
                     let girl = collect_girl(url, &document);
-                    let _ = create_dirs(config, &girl);
                     println!("{:?}", girl);
+                    
+                    let downloader = DownloaderImpl;
+                    
+                    match downloader.download(config, &girl) {
+                        Ok(_) => {
+                            println!("Downloaded successfully!");
+                        }
+                        Err(e) => {
+                            println!("Error downloading: {}", e);
+                        }
+                    }
                 }
                 Err(e) => {
                     println!("Error fetching URL: {}", e);

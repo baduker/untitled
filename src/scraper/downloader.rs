@@ -20,52 +20,53 @@ pub struct DownloaderImpl;
 
 impl Downloader for DownloaderImpl {
     fn download<T: Config>(&self, config: &T, girl: &Girl) -> Result<(), Box<dyn Error>> {
-        let client = Client::new();
-        let base_dir = config.download_dir();
+        let base_dir = get_base_dir(config)?;
+        
+        create_base_dirs(config, girl)?;
 
-        // Create directory for the girl
-        let girl_dir = format!("{}/{}", base_dir, girl.bio.get_name());
-        create_dirs(config, girl)?;
-
-        // Download galleries
-        for gallery in &girl.content.galleries {
-            if let Some(link) = &gallery.link {
-                let gallery_dir = format!(
-                    "{}/{}",
-                    girl_dir,
-                    gallery.date.as_deref().unwrap_or("unknown_date")
-                );
-                create_dirs(config, girl)?;
-                download_file(&client, link, &gallery_dir)?;
-            }
-        }
-
-        // Download videos
-        if let Some(videos) = &girl.content.videos {
-            for video in videos {
-                if let Some(source) = &video.source {
-                    let video_dir = format!("{}/videos", girl_dir);
-                    create_dirs(config, girl)?;
-                    download_file(&client, source, &video_dir)?;
-                }
-            }
-        }
+        print_gallery_structure(&base_dir, girl)?;
+        print_video_structure(&base_dir, girl)?;
 
         Ok(())
     }
 }
 
-fn download_file(client: &Client, url: &str, dir: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let response = client.get(url).send()?;
-    let file_name = url.split('/').last().unwrap();
-    let file_path = format!("{}/{}", dir, file_name);
-    let mut dest = File::create(file_path)?;
-    let content = response.bytes()?;
-    copy(&mut content.as_ref(), &mut dest)?;
+fn get_base_dir<T: Config>(config: &T) -> Result<PathBuf, Box<dyn Error>> {
+    let home_dir = dirs::home_dir().ok_or("Impossible to get your home dir")?;
+    Ok(PathBuf::from(home_dir.join(config.download_dir())))
+}
+
+fn print_gallery_structure(base_dir: &PathBuf, girl: &Girl) -> Result<(), Box<dyn Error>> {
+    let girl_name = to_snake_case(&girl.bio.get_name().to_string());
+    
+    for gallery in &girl.content.galleries {
+        if let Some(date) = &gallery.date {
+            let formatted_date = format_date(date).unwrap_or_else(|| "unknown_date".to_string());
+            let gallery_dir = base_dir.join(&girl_name).join("galleries").join(&formatted_date);
+            println!("Gallery directory: {:?}", gallery_dir);
+            println!("Gallery link: {}", gallery.show_link());
+        }
+    }
+
     Ok(())
 }
 
-pub fn create_dirs<T: Config>(config: &T, girl: &Girl) -> Result<(), Box<dyn Error>> {
+fn print_video_structure(base_dir: &PathBuf, girl: &Girl) -> Result<(), Box<dyn Error>> {
+    if let Some(videos) = &girl.content.videos {
+        let girl_name = to_snake_case(&girl.bio.get_name().to_string());
+        
+        for (index, video) in videos.iter().enumerate() {
+            if let Some(link) = &video.link {
+                let video_file = base_dir.join(&girl_name).join("videos").join(format!("video_{}.mp4", index + 1));
+                println!("Video file: {:?} (from {})", video_file, link);
+            }
+        }
+    }
+
+    Ok(())
+}
+
+pub fn create_base_dirs<T: Config>(config: &T, girl: &Girl) -> Result<(), Box<dyn Error>> {
     let home_dir = dirs::home_dir().ok_or("Impossible to get your home dir")?;
     let base_dir = PathBuf::from(home_dir.join(config.download_dir()));
     let girl_name = to_snake_case(&girl.bio.get_name().to_string());
@@ -73,18 +74,15 @@ pub fn create_dirs<T: Config>(config: &T, girl: &Girl) -> Result<(), Box<dyn Err
     let mut paths_to_create = vec![
         base_dir.join(&girl_name),
         base_dir.join(&girl_name).join("galleries"),
-        base_dir.join(&girl_name).join("videos"),
     ];
 
-    // Add gallery paths
-    for gallery in &girl.content.galleries {
-        if let Some(date) = &gallery.date {
-            let formatted_date = format_date(date).unwrap_or_else(|| "unknown_date".to_string());
-            paths_to_create.push(base_dir.join(&girl_name).join(formatted_date));
-        }
+    // Create the videos dir only if the struct has any
+
+    if girl.content.videos.is_some() {
+        paths_to_create.push(base_dir.join(&girl_name).join("videos"));
     }
 
-    // Create all directories
+    // Create all the base directories
     for path in paths_to_create {
         if !path.exists() {
             fs::create_dir_all(&path)?;
