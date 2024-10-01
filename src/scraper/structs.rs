@@ -1,11 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
-fn is_false(b: &bool) -> bool {
-    // This means "not the value of b"; * is the dereference operator and ! is the logical NOT operator.
-    !*b
-}
-
 #[derive(Debug)]
 pub struct Selectors;
 

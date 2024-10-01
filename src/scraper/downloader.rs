@@ -1,12 +1,12 @@
 use crate::config::Config;
-use crate::scraper::structs::{Gallery, Girl, Video, Visuals};
+use crate::scraper::structs::Girl;
 use crate::utilities::{format_date, to_snake_case};
 use reqwest::blocking::Client;
 use std::error::Error;
 use std::fs;
 use std::fs::File;
 use std::io::copy;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 pub trait Downloader {
     fn download<T: Config>(
@@ -67,9 +67,7 @@ fn download_file(client: &Client, url: &str, dir: &str) -> Result<(), Box<dyn st
 
 pub fn create_dirs<T: Config>(config: &T, girl: &Girl) -> Result<(), Box<dyn Error>> {
     let home_dir = dirs::home_dir().ok_or("Impossible to get your home dir")?;
-
     let base_dir = PathBuf::from(home_dir.join(config.download_dir()));
-
     let girl_name = to_snake_case(&girl.bio.get_name().to_string());
 
     let mut paths_to_create = vec![
