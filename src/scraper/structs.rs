@@ -8,6 +8,7 @@ impl Selectors {
     /// The set of CSS selectors to scrape the kindgirls.com website.
     pub const MODEL_INFO: &'static str = r#"#model_info"#;
     pub const MODEL_GALLERIES: &'static str = r#".gal_list a"#;
+    pub const GALLERY_IMAGE_SRC: &'static str = r#".gal_list a img"#;
     pub const MODEL_VIDEOS: &'static str = r#".video_list a"#;
 }
 
@@ -104,6 +105,9 @@ pub(crate) struct Gallery {
 
     #[serde(rename = "link", skip_serializing_if = "Option::is_none")]
     pub(crate) link: Option<String>,
+    
+    #[serde(rename = "photos", skip_serializing_if = "Option::is_none")]
+    pub(crate) photos: Option<Vec<String>>,
 
     #[serde(rename = "total_photos", skip_serializing_if = "Option::is_none")]
     pub(crate) total_photos: Option<i32>,

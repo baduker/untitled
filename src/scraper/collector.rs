@@ -1,7 +1,7 @@
 use super::structs::{Bio, Gallery, Girl, Selectors, Stats, Video, Visuals};
 use crate::config::Config;
+use crate::scraper::downloader::{Downloader, DownloaderImpl};
 use crate::utilities::{build_video_src_url, parse_video_duration, splitter};
-use crate::scraper::downloader::{DownloaderImpl, Downloader};
 use reqwest::blocking::Client;
 use reqwest::header::{HeaderMap, HeaderValue, USER_AGENT};
 use reqwest::Error;
@@ -26,9 +26,9 @@ pub fn scrape<T: Config>(config: &T, url: Option<&str>) {
                     let document = Html::parse_document(&content);
                     let girl = collect_girl(url, &document);
                     println!("{:?}", girl);
-                    
+
                     let downloader = DownloaderImpl;
-                    
+
                     match downloader.download(config, &girl) {
                         Ok(_) => {
                             println!("Downloaded successfully!");
@@ -50,13 +50,24 @@ pub fn scrape<T: Config>(config: &T, url: Option<&str>) {
     }
 }
 
-fn fetch(url: &str) -> Result<String, Error> {
+pub(crate) fn fetch(url: &str) -> Result<String, Error> {
     let client = Client::new();
     let mut headers = HeaderMap::new();
     headers.insert(USER_AGENT, HeaderValue::from_static(DEFAULT_USER_AGENT));
     let response = client.get(url).headers(headers).send();
     let body = response?.text()?;
     Ok(body)
+}
+
+fn collect_gallery_photos(gallery_url: &str) -> Result<Vec<String>, Error> {
+    let body = fetch(gallery_url)?;
+    let document = Html::parse_document(&body);
+    let selector = Selector::parse(Selectors::GALLERY_IMAGE_SRC).unwrap();
+    let photos: Vec<String> = document
+        .select(&selector)
+        .filter_map(|element| element.value().attr("src").map(|src| src.to_string()))
+        .collect();
+    Ok(photos)
 }
 
 fn collect_bio(document: &Html) -> Bio {
@@ -82,11 +93,12 @@ fn collect_gallery(document: &Html) -> Vec<Gallery> {
             let total_photos = text.split_whitespace().next().unwrap().parse::<i32>().ok();
             let title = splitter(element.value().attr("title").unwrap(), ", ");
             let date = title.last().unwrap().to_string();
-
+            let photos = collect_gallery_photos(&full_url).unwrap();
             Gallery {
                 id: Some(gallery_id),
                 date: Some(date),
                 link: Some(full_url),
+                photos: Some(photos),
                 total_photos,
             }
         })
