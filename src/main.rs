@@ -17,7 +17,10 @@ fn main() {
                     print_config(&config);
                 }
             }
-            Some(Commands::Scrape { url, full_size_image }) => match url {
+            Some(Commands::Scrape {
+                url,
+                full_size_image,
+            }) => match url {
                 Some(url) => scrape(&config, Some(&url), full_size_image),
                 None => scrape(&config, None, false),
             },

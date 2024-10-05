@@ -62,13 +62,13 @@ pub(crate) fn fetch(url: &str) -> Result<String, Error> {
 fn collect_gallery_photos(gallery_url: &str, full_size_image: bool) -> Result<Vec<String>, Error> {
     let body = fetch(gallery_url)?;
     let document = Html::parse_document(&body);
-    
+
     let selector = if full_size_image {
         Selector::parse(Selectors::GALLERY_IMAGE_FULL_SIZE_SRC).unwrap()
     } else {
         Selector::parse(Selectors::GALLERY_IMAGE_SRC).unwrap()
     };
-    
+
     let photos: Vec<String> = document
         .select(&selector)
         .filter_map(|element| element.value().attr("src").map(|src| src.to_string()))
@@ -93,14 +93,17 @@ fn collect_gallery(document: &Html, full_size_image: bool) -> Vec<Gallery> {
         .select(&selector)
         .map(|element| {
             let href = element.value().attr("href").unwrap();
-            
+
             let full_url = if full_size_image {
                 let gallery_id = splitter(href, "=").last().unwrap().to_string();
-                format!("{}/old/gallery-full.php?id={}", DEFAULT_BASE_URL, gallery_id)
+                format!(
+                    "{}/old/gallery-full.php?id={}",
+                    DEFAULT_BASE_URL, gallery_id
+                )
             } else {
                 format!("{}{}", DEFAULT_BASE_URL, href)
             };
-            
+
             let gallery_id = splitter(href, "=").last().unwrap().to_string();
             let text = element.text().collect::<Vec<_>>().join(" ");
             let total_photos = text.split_whitespace().next().unwrap().parse::<i32>().ok();
