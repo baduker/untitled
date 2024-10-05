@@ -1,11 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
-fn is_false(b: &bool) -> bool {
-    // This means "not the value of b"; * is the dereference operator and ! is the logical NOT operator.
-    !*b
-}
-
 #[derive(Debug)]
 pub struct Selectors;
 
@@ -13,6 +8,8 @@ impl Selectors {
     /// The set of CSS selectors to scrape the kindgirls.com website.
     pub const MODEL_INFO: &'static str = r#"#model_info"#;
     pub const MODEL_GALLERIES: &'static str = r#".gal_list a"#;
+    pub const GALLERY_IMAGE_SRC: &'static str = r#".gal_list a img"#;
+    pub const GALLERY_IMAGE_FULL_SIZE_SRC: &'static str = r#".gal_full a img"#;
     pub const MODEL_VIDEOS: &'static str = r#".video_list a"#;
 }
 
@@ -53,6 +50,17 @@ pub(crate) struct Bio {
     pub(crate) alias: Option<Vec<String>>,
 }
 
+pub(crate) struct BioName(Option<String>);
+
+impl fmt::Display for BioName {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.0 {
+            Some(name) => write!(f, "{}", name),
+            None => write!(f, "No name available."),
+        }
+    }
+}
+
 impl Bio {
     pub fn new(info: Vec<String>) -> Self {
         let mut bio = Bio {
@@ -72,6 +80,10 @@ impl Bio {
             }
         }
         bio
+    }
+
+    pub fn get_name(&self) -> BioName {
+        BioName(self.name.clone())
     }
 
     fn parse_alias(alias: &str) -> Vec<String> {
@@ -94,6 +106,9 @@ pub(crate) struct Gallery {
 
     #[serde(rename = "link", skip_serializing_if = "Option::is_none")]
     pub(crate) link: Option<String>,
+
+    #[serde(rename = "photos", skip_serializing_if = "Option::is_none")]
+    pub(crate) photos: Option<Vec<String>>,
 
     #[serde(rename = "total_photos", skip_serializing_if = "Option::is_none")]
     pub(crate) total_photos: Option<i32>,

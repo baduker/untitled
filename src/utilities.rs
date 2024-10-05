@@ -1,18 +1,7 @@
-use std::error::Error;
-use std::fs;
-use std::path::Path;
-
-use crate::config::Config;
+use chrono::NaiveDate;
 
 pub fn splitter(string: &str, split_on: &str) -> Vec<String> {
     string.split(split_on).map(|s| s.to_string()).collect()
-}
-
-pub fn create_dir<T: Config>(config: &T, dir_name: &str) -> Result<(), Box<dyn Error>> {
-    if !Path::new(dir_name).exists() {
-        fs::create_dir(dir_name)?;
-    }
-    Ok(())
 }
 
 pub fn build_video_src_url(source: String) -> String {
@@ -60,4 +49,14 @@ pub fn parse_video_duration(duration: &str) -> u32 {
             minutes * 60 + seconds
         })
         .unwrap_or_else(|_| 0)
+}
+
+pub fn to_snake_case(s: &str) -> String {
+    s.replace(' ', "_").replace('-', "_").replace('.', "")
+}
+
+pub fn format_date(date_str: &str) -> Option<String> {
+    NaiveDate::parse_from_str(date_str, "%d %b %Y")
+        .ok()
+        .map(|date| date.format("%d-%m-%Y").to_string())
 }

@@ -15,6 +15,9 @@ pub struct Cli {
     #[arg(short, long, value_name = "FILE", default_value = "untitled.toml")]
     pub config: PathBuf,
 
+    #[arg(long, default_value = "false")]
+    pub full_size_image: bool,
+
     #[command(subcommand)]
     pub command: Option<Commands>,
 }
@@ -32,5 +35,9 @@ pub enum Commands {
         /// The URL to scrape from
         #[arg(short, long, value_name = "URL")]
         url: Option<String>,
+
+        /// Download full-size images
+        #[arg(long)]
+        full_size_image: bool,
     },
 }
