@@ -60,12 +60,12 @@ fn download_galleries(base_dir: &PathBuf, girl: &Girl) -> Result<(), Box<dyn Err
     for gallery in &girl.content.galleries {
         if let (Some(date), Some(photos)) = (&gallery.date, &gallery.photos) {
             let formatted_date = format_date(date).unwrap_or_else(|| "unknown_date".to_string());
-            
+
             if is_already_downloaded(base_dir, &girl_name, "gallery", &formatted_date) {
                 println!("Gallery {} already downloaded, skipping...", formatted_date);
                 continue;
             }
-            
+
             let gallery_dir = base_dir
                 .join(&girl_name)
                 .join("galleries")
@@ -136,12 +136,12 @@ fn download_videos(base_dir: &PathBuf, girl: &Girl) -> Result<(), Box<dyn Error>
         for (video_index, video) in videos.iter().enumerate() {
             if let (Some(link), Some(source)) = (&video.link, &video.source) {
                 let file_name = format!("video_{:03}.mp4", video_index + 1);
-                
+
                 if is_already_downloaded(base_dir, &girl_name, "video", &file_name) {
                     println!("Video {} already downloaded, skipping...", file_name);
                     continue;
                 }
-                
+
                 let video_dir = base_dir.join(&girl_name).join("videos");
                 fs::create_dir_all(&video_dir)?;
 
@@ -210,16 +210,21 @@ pub fn create_base_dirs<T: Config>(config: &T, girl: &Girl) -> Result<(), Box<dy
     Ok(())
 }
 
-fn is_already_downloaded(base_dir: &Path, girl_name: &str, item_type: &str, identifier: &str) -> bool {
+fn is_already_downloaded(
+    base_dir: &Path,
+    girl_name: &str,
+    item_type: &str,
+    identifier: &str,
+) -> bool {
     match item_type {
         "gallery" => {
             let gallery_dir = base_dir.join(girl_name).join("galleries").join(identifier);
             gallery_dir.exists() && gallery_dir.is_dir()
-        },
+        }
         "video" => {
             let video_file = base_dir.join(girl_name).join("videos").join(identifier);
             video_file.exists() && video_file.is_file()
-        },
+        }
         _ => false,
     }
 }
