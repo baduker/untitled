@@ -10,7 +10,7 @@ use scraper::{Html, Selector};
 const DEFAULT_USER_AGENT: &str = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 Edg/128.0.0.0";
 const DEFAULT_BASE_URL: &str = "https://kindgirls.com";
 
-pub fn scrape<T: Config>(config: &T, url: Option<&str>) {
+pub fn scrape<T: Config>(config: &T, url: Option<&str>, full_size_image: bool) {
     match url {
         Some(url) => {
             println!("Scraping from: {}", url);
@@ -24,7 +24,7 @@ pub fn scrape<T: Config>(config: &T, url: Option<&str>) {
             match body {
                 Ok(content) => {
                     let document = Html::parse_document(&content);
-                    let girl = collect_girl(url, &document);
+                    let girl = collect_girl(url, &document, full_size_image);
                     println!("{:?}", girl);
 
                     let downloader = DownloaderImpl;
@@ -59,10 +59,16 @@ pub(crate) fn fetch(url: &str) -> Result<String, Error> {
     Ok(body)
 }
 
-fn collect_gallery_photos(gallery_url: &str) -> Result<Vec<String>, Error> {
+fn collect_gallery_photos(gallery_url: &str, full_size_image: bool) -> Result<Vec<String>, Error> {
     let body = fetch(gallery_url)?;
     let document = Html::parse_document(&body);
-    let selector = Selector::parse(Selectors::GALLERY_IMAGE_SRC).unwrap();
+    
+    let selector = if full_size_image {
+        Selector::parse(Selectors::GALLERY_IMAGE_FULL_SIZE_SRC).unwrap()
+    } else {
+        Selector::parse(Selectors::GALLERY_IMAGE_SRC).unwrap()
+    };
+    
     let photos: Vec<String> = document
         .select(&selector)
         .filter_map(|element| element.value().attr("src").map(|src| src.to_string()))
@@ -81,19 +87,26 @@ fn collect_bio(document: &Html) -> Bio {
     Bio::new(info_text)
 }
 
-fn collect_gallery(document: &Html) -> Vec<Gallery> {
+fn collect_gallery(document: &Html, full_size_image: bool) -> Vec<Gallery> {
     let selector = Selector::parse(Selectors::MODEL_GALLERIES).unwrap();
     document
         .select(&selector)
         .map(|element| {
             let href = element.value().attr("href").unwrap();
-            let full_url = format!("{}{}", DEFAULT_BASE_URL, href);
+            
+            let full_url = if full_size_image {
+                let gallery_id = splitter(href, "=").last().unwrap().to_string();
+                format!("{}/old/gallery-full.php?id={}", DEFAULT_BASE_URL, gallery_id)
+            } else {
+                format!("{}{}", DEFAULT_BASE_URL, href)
+            };
+            
             let gallery_id = splitter(href, "=").last().unwrap().to_string();
             let text = element.text().collect::<Vec<_>>().join(" ");
             let total_photos = text.split_whitespace().next().unwrap().parse::<i32>().ok();
             let title = splitter(element.value().attr("title").unwrap(), ", ");
             let date = title.last().unwrap().to_string();
-            let photos = collect_gallery_photos(&full_url).unwrap();
+            let photos = collect_gallery_photos(&full_url, full_size_image).unwrap();
             Gallery {
                 id: Some(gallery_id),
                 date: Some(date),
@@ -156,10 +169,10 @@ fn collect_stats(visuals: &Visuals) -> Stats {
     }
 }
 
-fn collect_girl(url: &str, document: &Html) -> Girl {
+fn collect_girl(url: &str, document: &Html, full_size_image: bool) -> Girl {
     let is_single_gallery = Girl::is_single_gallery(url);
     let bio = collect_bio(document);
-    let galleries = collect_gallery(document);
+    let galleries = collect_gallery(document, full_size_image);
     let videos = collect_videos(document);
     let visuals = collect_visuals(galleries, videos);
     let stats = collect_stats(&visuals);

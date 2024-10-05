@@ -1,11 +1,8 @@
 use crate::config::Config;
 use crate::scraper::structs::Girl;
 use crate::utilities::{format_date, to_snake_case};
-use reqwest::blocking::Client;
 use std::error::Error;
 use std::fs;
-use std::fs::File;
-use std::io::copy;
 use std::path::PathBuf;
 
 pub trait Downloader {
@@ -23,7 +20,6 @@ impl Downloader for DownloaderImpl {
         let base_dir = get_base_dir(config)?;
 
         create_base_dirs(config, girl)?;
-
         print_gallery_structure(&base_dir, girl)?;
         print_video_structure(&base_dir, girl)?;
 
