@@ -48,6 +48,9 @@ pub(crate) struct Bio {
 
     #[serde(rename = "alias", skip_serializing_if = "Option::is_none")]
     pub(crate) alias: Option<Vec<String>>,
+    
+    #[serde(rename = "link", skip_serializing_if = "Option::is_none")]
+    pub(crate) link: Option<String>,
 }
 
 pub(crate) struct BioName(Option<String>);
@@ -62,12 +65,13 @@ impl fmt::Display for BioName {
 }
 
 impl Bio {
-    pub fn new(info: Vec<String>) -> Self {
+    pub fn new(info: Vec<String>, url: &str) -> Self {
         let mut bio = Bio {
             name: None,
             country: None,
             birth_year: None,
             alias: None,
+            link: Some(url.to_string()),
         };
 
         for (index, item) in info.iter().enumerate() {
