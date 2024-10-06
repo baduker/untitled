@@ -25,7 +25,8 @@ pub fn scrape<T: Config>(config: &T, url: Option<&str>, full_size_image: bool) {
                 Ok(content) => {
                     let document = Html::parse_document(&content);
                     let girl = collect_girl(url, &document, full_size_image);
-                    println!("{:?}", girl);
+                    // Debug only; TODO: remove when logging is implemented
+                    // println!("{:?}", girl);
 
                     let downloader = DownloaderImpl;
 
