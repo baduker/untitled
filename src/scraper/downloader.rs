@@ -25,6 +25,7 @@ impl Downloader for DownloaderImpl {
         create_base_dirs(config, girl)?;
         // print_gallery_structure(&base_dir, girl)?;
         // print_video_structure(&base_dir, girl)?;
+        girl_struct_to_json(&base_dir, girl)?;
 
         download_galleries(&base_dir, girl)?;
         download_videos(&base_dir, girl)?;
@@ -33,7 +34,7 @@ impl Downloader for DownloaderImpl {
     }
 }
 #[warn(dead_code)]
-fn print_gallery_structure(base_dir: &PathBuf, girl: &Girl) -> Result<(), Box<dyn Error>> {
+fn print_gallery_structure(base_dir: &Path, girl: &Girl) -> Result<(), Box<dyn Error>> {
     let girl_name = to_snake_case(&girl.bio.get_name().to_string());
 
     for gallery in &girl.content.galleries {
@@ -51,7 +52,7 @@ fn print_gallery_structure(base_dir: &PathBuf, girl: &Girl) -> Result<(), Box<dy
     Ok(())
 }
 
-fn download_galleries(base_dir: &PathBuf, girl: &Girl) -> Result<(), Box<dyn Error>> {
+fn download_galleries(base_dir: &Path, girl: &Girl) -> Result<(), Box<dyn Error>> {
     let girl_name = to_snake_case(&girl.bio.get_name().to_string());
     let client = Client::new();
     let total_galleries = girl.content.galleries.len();
@@ -109,7 +110,7 @@ fn download_galleries(base_dir: &PathBuf, girl: &Girl) -> Result<(), Box<dyn Err
 }
 
 #[warn(dead_code)]
-fn print_video_structure(base_dir: &PathBuf, girl: &Girl) -> Result<(), Box<dyn Error>> {
+fn print_video_structure(base_dir: &Path, girl: &Girl) -> Result<(), Box<dyn Error>> {
     if let Some(videos) = &girl.content.videos {
         let girl_name = to_snake_case(&girl.bio.get_name().to_string());
 
@@ -127,7 +128,7 @@ fn print_video_structure(base_dir: &PathBuf, girl: &Girl) -> Result<(), Box<dyn 
     Ok(())
 }
 
-fn download_videos(base_dir: &PathBuf, girl: &Girl) -> Result<(), Box<dyn Error>> {
+fn download_videos(base_dir: &Path, girl: &Girl) -> Result<(), Box<dyn Error>> {
     if let Some(videos) = &girl.content.videos {
         let girl_name = to_snake_case(&girl.bio.get_name().to_string());
         let client = Client::new();
@@ -182,12 +183,12 @@ fn download_videos(base_dir: &PathBuf, girl: &Girl) -> Result<(), Box<dyn Error>
 
 fn get_base_dir<T: Config>(config: &T) -> Result<PathBuf, Box<dyn Error>> {
     let home_dir = dirs::home_dir().ok_or("Impossible to get your home dir")?;
-    Ok(PathBuf::from(home_dir.join(config.download_dir())))
+    Ok(Path::join(&home_dir, config.download_dir()))
 }
 
 pub fn create_base_dirs<T: Config>(config: &T, girl: &Girl) -> Result<(), Box<dyn Error>> {
     let home_dir = dirs::home_dir().ok_or("Impossible to get your home dir")?;
-    let base_dir = PathBuf::from(home_dir.join(config.download_dir()));
+    let base_dir = home_dir.join(config.download_dir());
     let girl_name = to_snake_case(&girl.bio.get_name().to_string());
 
     let mut paths_to_create = vec![
@@ -227,4 +228,13 @@ fn is_already_downloaded(
         }
         _ => false,
     }
+}
+
+fn girl_struct_to_json(base_dir: &Path, girl: &Girl) -> Result<(), Box<dyn Error>> {
+    let json = serde_json::to_string_pretty(&girl)?;
+    let girl_name = to_snake_case(&girl.bio.get_name().to_string()).to_lowercase();
+    let file_name = format!("{}_data.json", girl_name);
+    let file_path = base_dir.join(&girl_name).join(file_name);
+    fs::write(&file_path, json)?;
+    Ok(())
 }
