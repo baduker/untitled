@@ -52,7 +52,7 @@ pub fn parse_video_duration(duration: &str) -> u32 {
 }
 
 pub fn to_snake_case(s: &str) -> String {
-    s.replace(' ', "_").replace('-', "_").replace('.', "")
+    s.replace([' ', '-'], "_").replace('.', "")
 }
 
 pub fn format_date(date_str: &str) -> Option<String> {

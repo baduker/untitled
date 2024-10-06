@@ -77,7 +77,7 @@ fn collect_gallery_photos(gallery_url: &str, full_size_image: bool) -> Result<Ve
     Ok(photos)
 }
 
-fn collect_bio(document: &Html) -> Bio {
+fn collect_bio(document: &Html, url: &str) -> Bio {
     let selector = Selector::parse(Selectors::MODEL_INFO).unwrap();
     let model_info = document.select(&selector).next().unwrap();
     let info_text: Vec<String> = model_info
@@ -85,7 +85,7 @@ fn collect_bio(document: &Html) -> Bio {
         .map(|s| s.trim().to_string())
         .filter(|s| !s.is_empty())
         .collect();
-    Bio::new(info_text)
+    Bio::new(info_text, url)
 }
 
 fn collect_gallery(document: &Html, full_size_image: bool) -> Vec<Gallery> {
@@ -175,7 +175,7 @@ fn collect_stats(visuals: &Visuals) -> Stats {
 
 fn collect_girl(url: &str, document: &Html, full_size_image: bool) -> Girl {
     let is_single_gallery = Girl::is_single_gallery(url);
-    let bio = collect_bio(document);
+    let bio = collect_bio(document, url);
     let galleries = collect_gallery(document, full_size_image);
     let videos = collect_videos(document);
     let visuals = collect_visuals(galleries, videos);
