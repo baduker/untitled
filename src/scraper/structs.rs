@@ -48,7 +48,7 @@ pub(crate) struct Bio {
 
     #[serde(rename = "alias", skip_serializing_if = "Option::is_none")]
     pub(crate) alias: Option<Vec<String>>,
-    
+
     #[serde(rename = "link", skip_serializing_if = "Option::is_none")]
     pub(crate) link: Option<String>,
 }
