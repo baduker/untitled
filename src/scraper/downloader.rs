@@ -76,12 +76,11 @@ fn download_galleries(base_dir: &Path, girl: &Girl) -> Result<(), Box<dyn Error>
 
             current_gallery += 1;
             println!(
-                "Downloading {}'s gallery {} of {} ({}) -> {}",
+                "Downloading {}'s gallery {} of {} ({})",
                 girl.bio.get_name(),
                 current_gallery,
                 total_galleries,
                 formatted_date,
-                gallery.show_link()
             );
 
             let progress_bar = ProgressBar::new(photos.len() as u64);

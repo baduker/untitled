@@ -77,7 +77,13 @@ impl Bio {
         for (index, item) in info.iter().enumerate() {
             match index {
                 0 => bio.name = Some(item.clone()),
-                1 => bio.country = Some(item.clone()),
+                1 => {
+                    if item.starts_with("Alias:") {
+                        bio.country = None
+                    } else {
+                        bio.country = Some(item.clone())
+                    }
+                },
                 2 => bio.birth_year = Some(item.clone()),
                 3 => bio.alias = Some(Self::parse_alias(item)),
                 _ => break,
