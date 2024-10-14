@@ -17,7 +17,7 @@ jobs:
       src: ${{ steps.changes.outputs.src }}
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v4.2.0
+        uses: actions/checkout@v4.2.1
       - name: Filter for Rust file changes only
         uses: dorny/paths-filter@v3
         id: changes
@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v4.2.0
+        uses: actions/checkout@v4.2.1
         with:
           clean: false
           fetch-depth: 0
