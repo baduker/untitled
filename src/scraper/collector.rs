@@ -1,7 +1,7 @@
 use super::structs::{Bio, Gallery, Girl, Selectors, Stats, Video, Visuals};
 use crate::config::Config;
 use crate::scraper::downloader::{Downloader, DownloaderImpl};
-use crate::utilities::{build_video_src_url, parse_video_duration, splitter, todays_date};
+use crate::utilities::{build_video_src_url, parse_video_duration, splitter, today_date};
 use reqwest::blocking::Client;
 use reqwest::header::{HeaderMap, HeaderValue, USER_AGENT};
 use reqwest::Error;
@@ -24,6 +24,12 @@ pub fn scrape<T: Config>(config: &T, url: Option<&str>, full_size_image: bool) {
             match body {
                 Ok(content) => {
                     let document = Html::parse_document(&content);
+
+                    if is_model_not_found(&document) {
+                        println!("Model not found! Please check the URl or ID and try again.");
+                        return;
+                    }
+
                     let girl = collect_girl(url, &document, full_size_image);
                     // Debug only; TODO: remove when logging is implemented
                     // println!("{:?}", girl);
@@ -171,9 +177,17 @@ fn collect_stats(visuals: &Visuals) -> Stats {
     }
 }
 
+fn is_model_not_found(document: &Html) -> bool {
+    let selector = Selector::parse(Selectors::MODEL_NOT_FOUND).unwrap();
+    if let Some(element) = document.select(&selector).next() {
+        return element.text().any(|s| s.contains("Model not found"));
+    }
+    false
+}
+
 pub(crate) fn collect_girl(url: &str, document: &Html, full_size_image: bool) -> Girl {
     let is_single_gallery = Girl::is_single_gallery(url);
-    let last_update: Option<String> = Some(todays_date());
+    let last_update: Option<String> = Some(today_date());
     let bio = collect_bio(document, url);
     let galleries = collect_gallery(document, full_size_image);
     let videos = collect_videos(document);

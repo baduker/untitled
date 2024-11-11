@@ -61,6 +61,10 @@ pub fn format_date(date_str: &str) -> Option<String> {
         .map(|date| date.format("%d-%m-%Y").to_string())
 }
 
-pub fn todays_date() -> String {
+pub fn today_date() -> String {
     chrono::Local::now().format("%d-%m-%Y").to_string()
+}
+
+pub fn validate_id(id: &str) -> bool {
+    id.chars().all(char::is_numeric)
 }

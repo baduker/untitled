@@ -5,7 +5,7 @@ use crate::config::Config;
 use crate::scraper::collector::{collect_girl, fetch};
 use crate::scraper::downloader::Downloader;
 use crate::scraper::structs::Girl;
-use crate::utilities::todays_date;
+use crate::utilities::today_date;
 
 pub(crate) struct Updater;
 
@@ -21,7 +21,6 @@ impl Updater {
             let dir = dir?;
             let path = dir.path();
             if path.is_dir() {
-                println!("Updating: {:?}", path);
                 Self::update_girl_content(config, &dir.path())?;
             }
         }
@@ -42,7 +41,10 @@ impl Updater {
             let mut existing_girl: Girl = serde_json::from_str(&content)?;
 
             if let Some(link) = &existing_girl.bio.link {
-                println!("Checking updates for {}", existing_girl.bio.get_name());
+                println!(
+                    "Checking for new content for {}",
+                    existing_girl.bio.get_name()
+                );
 
                 let body = fetch(link)?;
                 let document = scraper::Html::parse_document(&body);
@@ -51,14 +53,14 @@ impl Updater {
                 let has_new_content = Self::compare_content(&existing_girl, &new_girl);
 
                 if has_new_content {
-                    println!("New content found for {}", existing_girl.bio.get_name());
+                    println!("New content found!");
                     Self::prompt_and_download(config, &new_girl)?;
 
                     // Update the existing girl with new content and timestamp
                     existing_girl.is_single_gallery = false;
                     existing_girl.content = new_girl.content;
                     existing_girl.stats = new_girl.stats;
-                    existing_girl.last_update = Some(todays_date());
+                    existing_girl.last_update = Some(today_date());
 
                     // Save updated JSON
                     let json = serde_json::to_string_pretty(&existing_girl)?;
@@ -80,8 +82,10 @@ impl Updater {
             .as_ref()
             .map(|v| v.len())
             .unwrap_or(0);
+
         let new_videos = new.content.videos.as_ref().map(|v| v.len()).unwrap_or(0);
 
+        // This is a simple quantity comparison, which should be enough for now
         new_galleries > existing_galleries || new_videos > existing_videos
     }
 

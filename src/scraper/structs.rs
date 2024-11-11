@@ -11,6 +11,8 @@ impl Selectors {
     pub const GALLERY_IMAGE_SRC: &'static str = r#".gal_list a img"#;
     pub const GALLERY_IMAGE_FULL_SIZE_SRC: &'static str = r#".gal_full a img"#;
     pub const MODEL_VIDEOS: &'static str = r#".video_list a"#;
+    // Use # for id's and . for classes.
+    pub const MODEL_NOT_FOUND: &'static str = "#cuerpo";
 }
 
 #[derive(Debug, Serialize, Deserialize)]
