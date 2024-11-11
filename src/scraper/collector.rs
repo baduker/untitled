@@ -1,7 +1,7 @@
 use super::structs::{Bio, Gallery, Girl, Selectors, Stats, Video, Visuals};
 use crate::config::Config;
 use crate::scraper::downloader::{Downloader, DownloaderImpl};
-use crate::utilities::{build_video_src_url, parse_video_duration, splitter};
+use crate::utilities::{build_video_src_url, parse_video_duration, splitter, todays_date};
 use reqwest::blocking::Client;
 use reqwest::header::{HeaderMap, HeaderValue, USER_AGENT};
 use reqwest::Error;
@@ -31,9 +31,7 @@ pub fn scrape<T: Config>(config: &T, url: Option<&str>, full_size_image: bool) {
                     let downloader = DownloaderImpl;
 
                     match downloader.download(config, &girl) {
-                        Ok(_) => {
-                            println!("Downloaded successfully!");
-                        }
+                        Ok(_) => {}
                         Err(e) => {
                             println!("Error downloading: {}", e);
                         }
@@ -173,8 +171,9 @@ fn collect_stats(visuals: &Visuals) -> Stats {
     }
 }
 
-fn collect_girl(url: &str, document: &Html, full_size_image: bool) -> Girl {
+pub(crate) fn collect_girl(url: &str, document: &Html, full_size_image: bool) -> Girl {
     let is_single_gallery = Girl::is_single_gallery(url);
+    let last_update: Option<String> = Some(todays_date());
     let bio = collect_bio(document, url);
     let galleries = collect_gallery(document, full_size_image);
     let videos = collect_videos(document);
@@ -183,6 +182,7 @@ fn collect_girl(url: &str, document: &Html, full_size_image: bool) -> Girl {
 
     Girl {
         is_single_gallery,
+        last_update,
         bio,
         content: visuals,
         stats,

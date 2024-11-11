@@ -24,6 +24,9 @@ fn main() {
                 Some(url) => scrape(&config, Some(&url), full_size_image),
                 None => scrape(&config, None, false),
             },
+            Some(Commands::Update) => {
+                scraper::updater::Updater::update(&config).unwrap();
+            }
             None => eprintln!("No command specified! Use --help to see available commands."),
         },
         Err(e) => {

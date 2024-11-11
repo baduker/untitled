@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::fmt;
+use crate::utilities::todays_date;
 
 #[derive(Debug)]
 pub struct Selectors;
@@ -18,6 +19,9 @@ pub(crate) struct Girl {
     /// This is the main container for a model from the kindgirls.com website.
     #[serde(rename = "singleGallery")]
     pub(crate) is_single_gallery: bool,
+
+    #[serde(rename = "last_update", skip_serializing_if = "Option::is_none")]
+    pub(crate) last_update: Option<String>,
 
     #[serde(rename = "bio")]
     pub(crate) bio: Bio,
@@ -124,6 +128,7 @@ pub(crate) struct Gallery {
     pub(crate) total_photos: Option<i32>,
 }
 
+#[allow(dead_code)]
 pub(crate) struct GalleryLink(Option<String>);
 
 impl fmt::Display for GalleryLink {

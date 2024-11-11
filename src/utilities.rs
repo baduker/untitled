@@ -60,3 +60,7 @@ pub fn format_date(date_str: &str) -> Option<String> {
         .ok()
         .map(|date| date.format("%d-%m-%Y").to_string())
 }
+
+pub fn todays_date() -> String {
+    chrono::Local::now().format("%d-%m-%Y").to_string()
+}
