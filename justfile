@@ -18,4 +18,6 @@ install:
 
 scrape:
     cargo run -- scrape --url "https://www.kindgirls.com/old/girls.php?id=1633" --full-size-image
-
+    
+update:
+    cargo run -- update

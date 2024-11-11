@@ -40,4 +40,6 @@ pub enum Commands {
         #[arg(long)]
         full_size_image: bool,
     },
+    #[command(about = "Updates girl's galleries")]
+    Update,
 }

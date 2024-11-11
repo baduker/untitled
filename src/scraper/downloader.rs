@@ -33,7 +33,7 @@ impl Downloader for DownloaderImpl {
         Ok(())
     }
 }
-#[warn(dead_code)]
+#[allow(dead_code)]
 fn print_gallery_structure(base_dir: &Path, girl: &Girl) -> Result<(), Box<dyn Error>> {
     let girl_name = to_snake_case(&girl.bio.get_name().to_string());
 
@@ -108,7 +108,7 @@ fn download_galleries(base_dir: &Path, girl: &Girl) -> Result<(), Box<dyn Error>
     Ok(())
 }
 
-#[warn(dead_code)]
+#[allow(dead_code)]
 fn print_video_structure(base_dir: &Path, girl: &Girl) -> Result<(), Box<dyn Error>> {
     if let Some(videos) = &girl.content.videos {
         let girl_name = to_snake_case(&girl.bio.get_name().to_string());
