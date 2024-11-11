@@ -21,3 +21,6 @@ scrape:
     
 update:
     cargo run -- update
+
+clean:
+    cargo clean
