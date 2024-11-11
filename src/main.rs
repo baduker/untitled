@@ -4,6 +4,7 @@ mod scraper;
 mod utilities;
 
 use crate::scraper::collector::scrape;
+use crate::utilities::validate_id;
 use clap::Parser;
 use cli::{Cli, Commands};
 use config::{print_config, read_or_create_config, MyConfig};
@@ -19,10 +20,24 @@ fn main() {
             }
             Some(Commands::Scrape {
                 url,
+                id,
                 full_size_image,
-            }) => match url {
-                Some(url) => scrape(&config, Some(&url), full_size_image),
-                None => scrape(&config, None, false),
+            }) => match (url, id) {
+                (Some(url), None) => scrape(&config, Some(&url), full_size_image),
+                (None, Some(id)) => {
+                    if !validate_id(&id) {
+                        eprintln!(
+                            "Girl's page ID's are only numbers! Double check the id and try again."
+                        );
+                        eprintln!("Note: id's between 0 and 5 are invalid.");
+                        return;
+                    }
+                    let constructed_url =
+                        format!("https://www.kindgirls.com/old/girls.php?id={}", id);
+                    scrape(&config, Some(&constructed_url), full_size_image)
+                }
+                (None, None) => eprintln!("You need to specify either a girl's page URL or ID!"),
+                (Some(_), Some(_)) => eprintln!("You can't use both URL and ID at the same time!"),
             },
             Some(Commands::Update) => {
                 scraper::updater::Updater::update(&config).unwrap();

@@ -15,9 +15,6 @@ pub struct Cli {
     #[arg(short, long, value_name = "FILE", default_value = "untitled.toml")]
     pub config: PathBuf,
 
-    #[arg(long, default_value = "false")]
-    pub full_size_image: bool,
-
     #[command(subcommand)]
     pub command: Option<Commands>,
 }
@@ -36,8 +33,12 @@ pub enum Commands {
         #[arg(short, long, value_name = "URL")]
         url: Option<String>,
 
+        /// Use just the girl's gallery ID
+        #[arg(short, long, value_name = "ID", conflicts_with = "url")]
+        id: Option<String>,
+
         /// Download full-size images
-        #[arg(long)]
+        #[arg(long, default_value = "false")]
         full_size_image: bool,
     },
     #[command(about = "Updates girl's galleries")]
