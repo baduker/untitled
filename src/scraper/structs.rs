@@ -18,7 +18,7 @@ impl Selectors {
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct Girl {
     /// This is the main container for a model from the kindgirls.com website.
-    #[serde(rename = "singleGallery")]
+    #[serde(rename = "is_single_gallery")]
     pub(crate) is_single_gallery: bool,
 
     #[serde(rename = "last_update", skip_serializing_if = "Option::is_none")]

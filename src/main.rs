@@ -29,7 +29,6 @@ fn main() {
                         eprintln!(
                             "Girl's page ID's are only numbers! Double check the id and try again."
                         );
-                        eprintln!("Note: id's between 0 and 5 are invalid.");
                         return;
                     }
                     let constructed_url =
