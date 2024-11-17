@@ -42,7 +42,7 @@ impl Updater {
 
             if let Some(link) = &existing_girl.bio.link {
                 println!(
-                    "Checking for new content for {}",
+                    "Checking {}'s page for new content...",
                     existing_girl.bio.get_name()
                 );
 

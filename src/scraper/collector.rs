@@ -13,10 +13,10 @@ const DEFAULT_BASE_URL: &str = "https://kindgirls.com";
 pub fn scrape<T: Config>(config: &T, url: Option<&str>, full_size_image: bool) {
     match url {
         Some(url) => {
-            println!("Scraping from: {}", url);
+            println!("Collecting data from {}", url);
 
             if Girl::is_single_gallery(url) {
-                println!("Scraping for single gallery is NOT implemented yet. :(");
+                println!("Scraping a single gallery is NOT implemented yet. :(");
                 return;
             }
 
