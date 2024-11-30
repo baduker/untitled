@@ -68,3 +68,19 @@ pub fn today_date() -> String {
 pub fn validate_id(id: &str) -> bool {
     id.chars().all(char::is_numeric)
 }
+
+pub fn format_duration(duration: std::time::Duration) {
+    let total_seconds = duration.as_secs();
+    if total_seconds >= 60 {
+        let minutes = total_seconds / 60;
+        let seconds = total_seconds % 60;
+        let ms = duration.subsec_millis();
+        if ms > 0 {
+            println!("Duration: {}m {}s {}ms", minutes, seconds, ms);
+        } else {
+            println!("Duration: {}m {}s", minutes, seconds);
+        }
+    } else {
+        println!("Duration: {:.2}s", total_seconds);
+    }
+}

@@ -4,12 +4,13 @@ mod scraper;
 mod utilities;
 
 use crate::scraper::collector::scrape;
-use crate::utilities::validate_id;
+use crate::utilities::{format_duration, validate_id};
 use clap::Parser;
 use cli::{Cli, Commands};
 use config::{print_config, read_or_create_config, MyConfig};
 
 fn main() {
+    let start_timer = std::time::Instant::now();
     let cli = Cli::parse();
     match read_or_create_config::<MyConfig>() {
         Ok(config) => match cli.command {
@@ -47,4 +48,6 @@ fn main() {
             eprintln!("Error: {}", e);
         }
     }
+    let execution_time = start_timer.elapsed();
+    format_duration(execution_time);
 }
