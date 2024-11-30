@@ -1,4 +1,3 @@
-use std::time;
 use chrono::NaiveDate;
 
 pub fn splitter(string: &str, split_on: &str) -> Vec<String> {
@@ -77,11 +76,11 @@ pub fn format_duration(duration: std::time::Duration) {
         let seconds = total_seconds % 60;
         let ms = duration.subsec_millis();
         if ms > 0 {
-            format!("Duration: {}m {}s {}ms", minutes, seconds, ms);
+            println!("Duration: {}m {}s {}ms", minutes, seconds, ms);
         } else {
-            format!("Duration: {}m {}s", minutes, seconds);
+            println!("Duration: {}m {}s", minutes, seconds);
         }
     } else {
-        format!("Duration: {:.2}s", total_seconds);
+        println!("Duration: {:.2}s", total_seconds);
     }
 }
