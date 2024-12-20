@@ -10,7 +10,10 @@ use crate::utilities::today_date;
 pub(crate) struct Updater;
 
 impl Updater {
-    pub fn update<T: Config>(config: &T) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn update<T: Config>(
+        config: &T,
+        auto_approve: bool,
+    ) -> Result<(), Box<dyn std::error::Error>> {
         let base_dir = Self::get_base_dir(config)?;
         if !base_dir.exists() {
             return Err("Base directory does not exist! Nothing to do.".into());
@@ -21,7 +24,7 @@ impl Updater {
             let dir = dir?;
             let path = dir.path();
             if path.is_dir() {
-                Self::update_girl_content(config, &dir.path())?;
+                Self::update_girl_content(config, &dir.path(), auto_approve)?;
             }
         }
         Ok(())
@@ -30,6 +33,7 @@ impl Updater {
     fn update_girl_content<T: Config>(
         config: &T,
         girl_dir: &Path,
+        auto_approve: bool,
     ) -> Result<(), Box<dyn std::error::Error>> {
         let json_files: Vec<_> = fs::read_dir(girl_dir)?
             .filter_map(|entry| entry.ok())
@@ -54,7 +58,9 @@ impl Updater {
 
                 if has_new_content {
                     println!("New content found!");
-                    Self::prompt_and_download(config, &new_girl)?;
+                    if !auto_approve {
+                        Self::prompt_and_download(config, &new_girl)?;
+                    }
 
                     // Update the existing girl with new content and timestamp
                     existing_girl.is_single_gallery = false;

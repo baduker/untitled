@@ -42,5 +42,9 @@ pub enum Commands {
         full_size_image: bool,
     },
     #[command(about = "Updates girl's galleries")]
-    Update,
+    Update {
+        /// auto approve the update (don't ask for confirmation)
+        #[arg(short, long, value_name = "AUTO_APPROVE", default_value = "false")]
+        auto_approve: bool,
+    },
 }
