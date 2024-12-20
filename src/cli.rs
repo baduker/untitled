@@ -46,5 +46,13 @@ pub enum Commands {
         /// auto approve the update (don't ask for confirmation)
         #[arg(short, long, value_name = "AUTO_APPROVE", default_value = "false")]
         auto_approve: bool,
+
+        /// Enable parallel downloads
+        #[arg(short, long, value_name = "PARALLEL", default_value = "false")]
+        parallel: bool,
+
+        /// The maximum number of parallel downloads (workers)
+        #[arg(short, long, value_name = "WORKERS", default_value = "4")]
+        workers: usize,
     },
 }

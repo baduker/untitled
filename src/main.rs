@@ -39,11 +39,16 @@ fn main() {
                 (None, None) => eprintln!("You need to specify either a girl's page URL or ID!"),
                 (Some(_), Some(_)) => eprintln!("You can't use both URL and ID at the same time!"),
             },
-            Some(Commands::Update { auto_approve }) => {
+            Some(Commands::Update {
+                auto_approve,
+                parallel,
+                workers,
+            }) => {
                 if auto_approve {
                     println!("Running the update in the AUTO-APPROVE mode.");
                 }
-                scraper::updater::Updater::update(&config, auto_approve).unwrap();
+                scraper::updater::Updater::update(&config, auto_approve, parallel, workers)
+                    .unwrap();
             }
             None => eprintln!("No command specified! Use --help to see available commands."),
         },
