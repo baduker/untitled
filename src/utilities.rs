@@ -1,4 +1,13 @@
+use crate::config::Config;
+use anyhow::Result;
 use chrono::NaiveDate;
+use std::path::{Path, PathBuf};
+
+pub fn get_base_dir<T: Config>(config: &T) -> Result<PathBuf> {
+    let home_dir =
+        dirs::home_dir().ok_or_else(|| anyhow::anyhow!("Impossible to get your home dir"))?;
+    Ok(Path::join(&home_dir, config.download_dir()))
+}
 
 pub fn splitter(string: &str, split_on: &str) -> Vec<String> {
     string.split(split_on).map(|s| s.to_string()).collect()
@@ -76,11 +85,11 @@ pub fn format_duration(duration: std::time::Duration) {
         let seconds = total_seconds % 60;
         let ms = duration.subsec_millis();
         if ms > 0 {
-            println!("Duration: {}m {}s {}ms", minutes, seconds, ms);
+            println!("Execution duration: {}m {}s {}ms", minutes, seconds, ms);
         } else {
-            println!("Duration: {}m {}s", minutes, seconds);
+            println!("Execution duration: {}m {}s", minutes, seconds);
         }
     } else {
-        println!("Duration: {:.2}s", total_seconds);
+        println!("Execution duration: {:.2}s", total_seconds);
     }
 }

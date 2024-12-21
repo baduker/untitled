@@ -1,25 +1,31 @@
 use crate::config::Config;
 use crate::scraper::structs::Girl;
-use crate::utilities::{format_date, to_snake_case};
+use crate::utilities::{format_date, get_base_dir, to_snake_case};
 use indicatif::{ProgressBar, ProgressStyle};
 use reqwest::blocking::Client;
 use std::error::Error;
 use std::fs;
 use std::io::copy;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 pub trait Downloader {
     fn download<T: Config>(
         &self,
         config: &T,
         girl: &Girl,
-    ) -> Result<(), Box<dyn std::error::Error>>;
+        is_auto_approved: bool,
+    ) -> Result<(), Box<dyn Error>>;
 }
 
 pub struct DownloaderImpl;
 
 impl Downloader for DownloaderImpl {
-    fn download<T: Config>(&self, config: &T, girl: &Girl) -> Result<(), Box<dyn Error>> {
+    fn download<T: Config>(
+        &self,
+        config: &T,
+        girl: &Girl,
+        is_auto_approved: bool,
+    ) -> Result<(), Box<dyn Error>> {
         let base_dir = get_base_dir(config)?;
 
         create_base_dirs(config, girl)?;
@@ -27,7 +33,7 @@ impl Downloader for DownloaderImpl {
         // print_video_structure(&base_dir, girl)?;
         girl_struct_to_json(&base_dir, girl)?;
 
-        download_galleries(&base_dir, girl)?;
+        download_galleries(&base_dir, girl, is_auto_approved)?;
         download_videos(&base_dir, girl)?;
 
         Ok(())
@@ -52,7 +58,11 @@ fn print_gallery_structure(base_dir: &Path, girl: &Girl) -> Result<(), Box<dyn E
     Ok(())
 }
 
-fn download_galleries(base_dir: &Path, girl: &Girl) -> Result<(), Box<dyn Error>> {
+fn download_galleries(
+    base_dir: &Path,
+    girl: &Girl,
+    is_auto_approved: bool,
+) -> Result<(), Box<dyn Error>> {
     let girl_name = to_snake_case(&girl.bio.get_name().to_string());
     let client = Client::new();
     let total_galleries = girl.content.galleries.len();
@@ -62,7 +72,9 @@ fn download_galleries(base_dir: &Path, girl: &Girl) -> Result<(), Box<dyn Error>
         if let (Some(date), Some(photos)) = (&gallery.date, &gallery.photos) {
             let formatted_date = format_date(date).unwrap_or_else(|| "unknown_date".to_string());
 
-            if is_already_downloaded(base_dir, &girl_name, "gallery", &formatted_date) {
+            if is_auto_approved
+                || is_already_downloaded(base_dir, &girl_name, "gallery", &formatted_date)
+            {
                 println!("Gallery {} already downloaded, skipping...", formatted_date);
                 continue;
             }
@@ -178,11 +190,6 @@ fn download_videos(base_dir: &Path, girl: &Girl) -> Result<(), Box<dyn Error>> {
     }
 
     Ok(())
-}
-
-fn get_base_dir<T: Config>(config: &T) -> Result<PathBuf, Box<dyn Error>> {
-    let home_dir = dirs::home_dir().ok_or("Impossible to get your home dir")?;
-    Ok(Path::join(&home_dir, config.download_dir()))
 }
 
 pub fn create_base_dirs<T: Config>(config: &T, girl: &Girl) -> Result<(), Box<dyn Error>> {

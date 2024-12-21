@@ -1,5 +1,8 @@
 default: lint test build
 
+fmt:
+    cargo fmt
+
 lint:
     cargo fmt -- --check
     cargo clippy --all-targets --all-features -- -D warnings
