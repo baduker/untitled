@@ -11,6 +11,10 @@ const DEFAULT_USER_AGENT: &str = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7
 const DEFAULT_BASE_URL: &str = "https://kindgirls.com";
 
 pub fn scrape<T: Config>(config: &T, url: Option<&str>, full_size_image: bool) {
+    // Add a validation check based on id that can be read from the url
+    // All collections have a JSON file that holds the id field
+    // If the id from the url matches the id in the file, we already have all the data
+    // We can prompt the user to update the data if it's outdated
     match url {
         Some(url) => {
             println!("Collecting data from {}", url);
