@@ -37,13 +37,17 @@ pub enum Commands {
         #[arg(short, long, value_name = "ID", conflicts_with = "url")]
         id: Option<String>,
 
+        /// Download multiple galleries by providing their ids by separating them with commas
+        #[arg(short, long, num_args = 1.., value_name = "LIST-IDS", conflicts_with = "url")]
+        list_ids: Option<Vec<String>>,
+
         /// Download full-size images
         #[arg(long, default_value = "false")]
         full_size_image: bool,
     },
     #[command(about = "Updates girl's galleries")]
     Update {
-        /// auto approve the update (don't ask for confirmation)
+        /// Auto approve the update (don't ask for confirmation)
         #[arg(short, long, value_name = "AUTO_APPROVE", default_value = "false")]
         auto_approve: bool,
 
