@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 clap = { version = "4.5.17", features = ["derive"] }
 chrono = "0.4.38"
-dirs = "5.0.1"
+dirs = "6.0.0"
 indicatif = "0.17.8"
 rayon = "1.10.0"
 reqwest = { version = "0.12.7", features = ["blocking"] }
