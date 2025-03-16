@@ -129,7 +129,12 @@ impl Updater {
         Ok(())
     }
 
-    fn download<T: Config>(config: &T, new_girl: &Girl, auto_approve: bool, parallel_run: bool) -> Result<()> {
+    fn download<T: Config>(
+        config: &T,
+        new_girl: &Girl,
+        auto_approve: bool,
+        parallel_run: bool,
+    ) -> Result<()> {
         let downloader = crate::scraper::downloader::DownloaderImpl;
         downloader
             .download(config, new_girl, auto_approve, parallel_run)
