@@ -75,11 +75,11 @@ impl Updater {
 
         if parallel {
             json_files.par_iter().try_for_each(|json_path| {
-                Self::process_girl_file(config, json_path, auto_approve)
+                Self::process_girl_file(config, json_path, auto_approve, true)
             })?;
         } else {
             for json_path in json_files {
-                Self::process_girl_file(config, &json_path, auto_approve)?;
+                Self::process_girl_file(config, &json_path, auto_approve, false)?;
             }
         }
 
@@ -90,6 +90,7 @@ impl Updater {
         config: &T,
         json_path: &Path,
         auto_approve: bool,
+        parallel_run: bool,
     ) -> Result<()> {
         let content = fs::read_to_string(json_path)?;
         let mut existing_girl: Girl = serde_json::from_str(&content)?;
@@ -109,7 +110,7 @@ impl Updater {
             if has_new_content {
                 println!("New content found!");
                 if auto_approve || Self::prompt_user()? {
-                    Self::download(config, &new_girl, auto_approve)?;
+                    Self::download(config, &new_girl, auto_approve, parallel_run)?;
 
                     // Update the existing girl
                     existing_girl.is_single_gallery = false;
@@ -128,10 +129,15 @@ impl Updater {
         Ok(())
     }
 
-    fn download<T: Config>(config: &T, new_girl: &Girl, auto_approve: bool) -> Result<()> {
+    fn download<T: Config>(
+        config: &T,
+        new_girl: &Girl,
+        auto_approve: bool,
+        parallel_run: bool,
+    ) -> Result<()> {
         let downloader = crate::scraper::downloader::DownloaderImpl;
         downloader
-            .download(config, new_girl, auto_approve)
+            .download(config, new_girl, auto_approve, parallel_run)
             .expect("TODO: panic message");
         Ok(())
     }

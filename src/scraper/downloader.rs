@@ -1,6 +1,6 @@
 use crate::config::Config;
 use crate::scraper::structs::Girl;
-use crate::utilities::{format_date, get_base_dir, to_snake_case};
+use crate::utilities::{create_progress_bar, format_date, get_base_dir, to_snake_case};
 use indicatif::{ProgressBar, ProgressStyle};
 use reqwest::blocking::Client;
 use std::error::Error;
@@ -14,6 +14,7 @@ pub trait Downloader {
         config: &T,
         girl: &Girl,
         is_auto_approved: bool,
+        parallel_run: bool,
     ) -> Result<(), Box<dyn Error>>;
 }
 
@@ -25,6 +26,7 @@ impl Downloader for DownloaderImpl {
         config: &T,
         girl: &Girl,
         is_auto_approved: bool,
+        parallel_run: bool,
     ) -> Result<(), Box<dyn Error>> {
         let base_dir = get_base_dir(config)?;
 
@@ -33,7 +35,7 @@ impl Downloader for DownloaderImpl {
         // print_video_structure(&base_dir, girl)?;
         girl_struct_to_json(&base_dir, girl)?;
 
-        download_galleries(&base_dir, girl, is_auto_approved)?;
+        download_galleries(&base_dir, girl, is_auto_approved, false)?;
         download_videos(&base_dir, girl)?;
 
         Ok(())
@@ -62,6 +64,7 @@ fn download_galleries(
     base_dir: &Path,
     girl: &Girl,
     is_auto_approved: bool,
+    parallel_run: bool,
 ) -> Result<(), Box<dyn Error>> {
     let girl_name = to_snake_case(&girl.bio.get_name().to_string());
     let client = Client::new();
@@ -75,7 +78,7 @@ fn download_galleries(
             if is_auto_approved
                 || is_already_downloaded(base_dir, &girl_name, "gallery", &formatted_date)
             {
-                println!("Gallery {} already downloaded, skipping...", formatted_date);
+                println!("Gallery {} already downloaded..", formatted_date);
                 continue;
             }
 
@@ -95,11 +98,8 @@ fn download_galleries(
                 formatted_date,
             );
 
-            let progress_bar = ProgressBar::new(photos.len() as u64);
-            progress_bar.set_style(ProgressStyle::default_bar()
-                .template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} ({eta})")
-                .unwrap());
-            progress_bar.set_message(format!("Downloading gallery {}", formatted_date));
+            let message = format!("Downloading gallery {}", formatted_date);
+            let progress_bar = create_progress_bar(photos.len() as u64, parallel_run, &*message);
 
             for (index, photo_url) in photos.iter().enumerate() {
                 let response = client.get(photo_url).send()?;
@@ -150,7 +150,7 @@ fn download_videos(base_dir: &Path, girl: &Girl) -> Result<(), Box<dyn Error>> {
                 let file_name = format!("video_{:03}.mp4", video_index + 1);
 
                 if is_already_downloaded(base_dir, &girl_name, "video", &file_name) {
-                    println!("Video {} already downloaded, skipping...", file_name);
+                    println!("Video {} already downloaded.", file_name);
                     continue;
                 }
 
@@ -160,7 +160,8 @@ fn download_videos(base_dir: &Path, girl: &Girl) -> Result<(), Box<dyn Error>> {
                 let file_path = video_dir.join(&file_name);
 
                 println!(
-                    "Downloading video {} of {} ({})",
+                    "Downloading {} video {} of {} ({})",
+                    girl.bio.get_name(),
                     video_index + 1,
                     total_videos,
                     link
