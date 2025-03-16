@@ -142,6 +142,7 @@ impl fmt::Display for GalleryLink {
 }
 
 impl Gallery {
+    #[allow(dead_code)]
     pub fn show_link(&self) -> GalleryLink {
         GalleryLink(self.link.clone())
     }
