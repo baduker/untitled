@@ -40,7 +40,7 @@ pub fn scrape<T: Config>(config: &T, url: Option<&str>, full_size_image: bool) {
 
                     let downloader = DownloaderImpl;
 
-                    match downloader.download(config, &girl, false) {
+                    match downloader.download(config, &girl, false, false) {
                         Ok(_) => {}
                         Err(e) => {
                             println!("Error downloading: {}", e);

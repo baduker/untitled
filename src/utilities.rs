@@ -1,6 +1,7 @@
 use crate::config::Config;
 use anyhow::Result;
 use chrono::NaiveDate;
+use indicatif::{ProgressBar, ProgressStyle};
 use std::path::{Path, PathBuf};
 
 pub fn get_base_dir<T: Config>(config: &T) -> Result<PathBuf> {
@@ -91,5 +92,24 @@ pub fn format_duration(duration: std::time::Duration) {
         }
     } else {
         println!("Execution duration: {:.2}s", total_seconds);
+    }
+}
+
+pub fn create_progress_bar(total: u64, parallel_run: bool, message: &str) -> ProgressBar {
+    let pb_style = ProgressStyle::default_bar()
+        .template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} ({eta})")
+        .unwrap();
+
+    if parallel_run {
+        let multi_pb = indicatif::MultiProgress::new();
+        let pb = multi_pb.add(ProgressBar::new(total));
+        pb.set_message(message);
+        pb.set_style(pb_style);
+        pb
+    } else {
+        let pb = ProgressBar::new(total);
+        pb.set_message(message);
+        pb.set_style(pb_style);
+        pb
     }
 }
