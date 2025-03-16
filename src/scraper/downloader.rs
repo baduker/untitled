@@ -31,35 +31,14 @@ impl Downloader for DownloaderImpl {
         let base_dir = get_base_dir(config)?;
 
         create_base_dirs(config, girl)?;
-        // print_gallery_structure(&base_dir, girl)?;
-        // print_video_structure(&base_dir, girl)?;
         girl_struct_to_json(&base_dir, girl)?;
 
-        download_galleries(&base_dir, girl, is_auto_approved, false)?;
+        download_galleries(&base_dir, girl, is_auto_approved, parallel_run)?;
         download_videos(&base_dir, girl)?;
 
         Ok(())
     }
 }
-#[allow(dead_code)]
-fn print_gallery_structure(base_dir: &Path, girl: &Girl) -> Result<(), Box<dyn Error>> {
-    let girl_name = to_snake_case(&girl.bio.get_name().to_string());
-
-    for gallery in &girl.content.galleries {
-        if let Some(date) = &gallery.date {
-            let formatted_date = format_date(date).unwrap_or_else(|| "unknown_date".to_string());
-            let gallery_dir = base_dir
-                .join(&girl_name)
-                .join("galleries")
-                .join(&formatted_date);
-            println!("Gallery directory: {:?}", gallery_dir);
-            println!("Gallery link: {}", gallery.show_link());
-        }
-    }
-
-    Ok(())
-}
-
 fn download_galleries(
     base_dir: &Path,
     girl: &Girl,
@@ -114,25 +93,6 @@ fn download_galleries(
             }
 
             progress_bar.finish_with_message("All photos downloaded!");
-        }
-    }
-
-    Ok(())
-}
-
-#[allow(dead_code)]
-fn print_video_structure(base_dir: &Path, girl: &Girl) -> Result<(), Box<dyn Error>> {
-    if let Some(videos) = &girl.content.videos {
-        let girl_name = to_snake_case(&girl.bio.get_name().to_string());
-
-        for (index, video) in videos.iter().enumerate() {
-            if let Some(link) = &video.link {
-                let video_file = base_dir
-                    .join(&girl_name)
-                    .join("videos")
-                    .join(format!("video_{}.mp4", index + 1));
-                println!("Video file: {:?} (from {})", video_file, link);
-            }
         }
     }
 

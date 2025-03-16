@@ -100,15 +100,17 @@ pub fn create_progress_bar(total: u64, parallel_run: bool, message: &str) -> Pro
         .template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} ({eta})")
         .unwrap();
 
+    let owned_message = message.to_owned();
+
     if parallel_run {
         let multi_pb = indicatif::MultiProgress::new();
         let pb = multi_pb.add(ProgressBar::new(total));
-        pb.set_message(message);
+        pb.set_message(owned_message.clone());
         pb.set_style(pb_style);
         pb
     } else {
         let pb = ProgressBar::new(total);
-        pb.set_message(message);
+        pb.set_message(owned_message);
         pb.set_style(pb_style);
         pb
     }
